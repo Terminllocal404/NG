@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Cliente — Admin NG Doce Duo</title>
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body data-no-layout>
+  <script src="../../js/include.js"></script>
+  <script src="../../js/admin.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireAdmin()) return;
+        var c = NG.customerService.get(NG.param("id"));
+        if (!c) {
+          NG.adminShell("clientes", "Cliente", '<div class="card">' + NG.emptyState({ icon: "users", title: "Cliente não encontrado", message: "Volte à lista de clientes.", actionHtml: '<a class="btn btn--primary btn--inline" href="clientes.html">Ver clientes</a>' }) + "</div>");
+          return;
+        }
+        var orders = NG.orderService.all().filter(function (o) { return o.customerId === c.id; });
+        var content =
+          '<a class="btn btn--ghost btn--sm btn--inline" href="clientes.html" style="margin-bottom:16px">' + NG.icon("arrowLeft", { size: 16 }) + " Voltar</a>" +
+          '<div class="split">' +
+            '<div><div class="card"><h3 style="margin-bottom:16px">Histórico de pedidos</h3>' +
+              (orders.length
+                ? '<div class="data-table"><table><thead><tr><th>Pedido</th><th>Data</th><th>Total</th><th>Status</th></tr></thead><tbody>' +
+                  orders.map(function (o) { return '<tr onclick="location.href=\'detalhe.html?id=' + o.id + "'\" style=\"cursor:pointer\"><td>" + o.id + "</td><td>" + NG.dateBR(o.date) + "</td><td>" + NG.money(NG.orderService.total(o)) + "</td><td>" + NG.statusBadge(o.status) + "</td></tr>"; }).join("") +
+                  "</tbody></table></div>"
+                : NG.emptyState({ icon: "box", title: "Sem pedidos", message: "Este cliente ainda não fez pedidos." })) +
+            "</div></div>" +
+            '<aside class="card card--flat"><h3>' + NG.escape(c.name) + "</h3><div class=\"divider\"></div>" +
+              '<p class="text-small">' + NG.icon("user", { size: 16 }) + " " + NG.escape(c.email) + "</p>" +
+              '<p class="text-small mt-4">' + NG.icon("phone", { size: 16 }) + " " + c.phone + "</p>" +
+              '<p class="text-small mt-4">Cliente desde ' + NG.dateBR(c.since) + "</p>" +
+              '<div class="divider"></div>' +
+              '<div class="summary-row"><span class="muted">Pedidos</span><strong>' + c.orders + "</strong></div>" +
+              '<div class="summary-row"><span class="muted">Total gasto</span><strong>' + NG.money(c.total) + "</strong></div>" +
+              '<div class="summary-row"><span class="muted">Status</span>' + (c.status === "ativo" ? '<span class="badge badge--success">Ativo</span>' : '<span class="badge badge--neutral">Inativo</span>') + "</div>" +
+            "</aside>" +
+          "</div>";
+        NG.adminShell("clientes", "Detalhes do cliente", content);
+      },
+    };
+  </script>
+</body>
+</html>

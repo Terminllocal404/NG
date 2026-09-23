@@ -1,0 +1,376 @@
+/* ============================================
+   NG Doce Duo — Dados mock (fonte única)
+   Preparado para futura substituição por API.
+   ============================================ */
+(function (NG) {
+  "use strict";
+
+  NG.store = {
+    name: "NG Doce Duo",
+    tagline: "Tudo com amor",
+    phone: "(11) 98888-7766",
+    whatsapp: "5511988887766",
+    email: "contato@ngduodoce.com.br",
+    address: {
+      street: "Rua das Confeitarias, 120",
+      district: "Jardim Doce",
+      city: "São Paulo",
+      state: "SP",
+      cep: "03000-000",
+    },
+    hours: "Terça a domingo, das 10h às 20h",
+    deliveryFee: 8.9,
+    freeDeliveryAbove: 90,
+    pickupInfo: "Retirada no balcão. Traga o número do pedido.",
+    scheduleMinHours: 4, // antecedência padrão
+  };
+
+  const IMG = "assets/products/";
+
+  NG.categories = [
+    { slug: "bolos-de-pote", name: "Bolos de Pote", image: IMG + "bolos-pote-variados.jpg" },
+    { slug: "copos-da-felicidade", name: "Copos da Felicidade", image: IMG + "copo-felicidade-oreo.jpg" },
+    { slug: "bolos-inteiros", name: "Bolos Inteiros", image: IMG + "bolo-pote-ninho-geleia.jpg" },
+    { slug: "doces", name: "Doces & Brigadeiros", image: IMG + "bolo-pote-romeu-julieta.jpg" },
+  ];
+
+  NG.products = [
+    {
+      id: "cp-oreo",
+      name: "Copo da Felicidade Oreo",
+      category: "copos-da-felicidade",
+      flavor: "chocolate",
+      price: 18.9,
+      image: IMG + "copo-felicidade-oreo.jpg",
+      shortDesc: "Camadas de creme, biscoito Oreo triturado e cobertura cremosa.",
+      description:
+        "Nosso queridinho: creme aveludado, farofa de Oreo e um biscoito inteiro coroando o copo. Servido gelado, é impossível provar só uma colher.",
+      ingredients: ["Leite condensado", "Creme de leite", "Biscoito Oreo", "Chocolate", "Baunilha"],
+      leadHours: 4,
+      stock: 24,
+      active: true,
+      featured: true,
+      badges: ["Mais vendido"],
+    },
+    {
+      id: "bp-maracuja",
+      name: "Bolo de Pote de Maracujá",
+      category: "bolos-de-pote",
+      flavor: "maracuja",
+      price: 15.9,
+      image: IMG + "bolo-pote-maracuja.jpg",
+      shortDesc: "Massa fofinha, creme de maracujá e calda com sementes.",
+      description:
+        "Equilíbrio perfeito entre o doce e o azedinho: massa branca úmida, creme de maracujá e a calda natural com sementes por cima.",
+      ingredients: ["Maracujá natural", "Leite condensado", "Creme de leite", "Massa branca"],
+      leadHours: 4,
+      stock: 18,
+      active: true,
+      featured: true,
+      badges: ["Novidade"],
+    },
+    {
+      id: "bp-ninho-geleia",
+      name: "Bolo de Pote Ninho com Geleia de Morango",
+      category: "bolos-de-pote",
+      flavor: "ninho",
+      price: 16.9,
+      image: IMG + "bolo-pote-ninho-geleia.jpg",
+      shortDesc: "Creme de leite Ninho com geleia caseira de morango.",
+      description:
+        "O queridinho que chegou para conquistar seu coração: creme de leite Ninho super cremoso em camadas com geleia caseira de morango.",
+      ingredients: ["Leite em pó Ninho", "Leite condensado", "Morango", "Massa branca"],
+      leadHours: 4,
+      stock: 15,
+      active: true,
+      featured: true,
+      badges: ["Queridinho"],
+    },
+    {
+      id: "bp-romeu-julieta",
+      name: "Bolo de Pote Romeu e Julieta",
+      category: "bolos-de-pote",
+      flavor: "queijo",
+      price: 16.5,
+      image: IMG + "bolo-pote-romeu-julieta.jpg",
+      shortDesc: "Creme de queijo com goiabada cremosa.",
+      description:
+        "Um clássico brasileiro em camadas: creme delicado de queijo com goiabada derretida. Doce na medida certa.",
+      ingredients: ["Queijo", "Goiabada", "Leite condensado", "Massa branca"],
+      leadHours: 4,
+      stock: 12,
+      active: true,
+      featured: false,
+      badges: [],
+    },
+    {
+      id: "bp-limao",
+      name: "Bolo de Pote de Limão",
+      category: "bolos-de-pote",
+      flavor: "limao",
+      price: 15.5,
+      image: IMG + "bolos-pote-variados.jpg",
+      shortDesc: "Creme refrescante de limão com raspas.",
+      description:
+        "Refrescante e cremoso: mousse de limão em camadas com massa fofinha e raspas de limão por cima.",
+      ingredients: ["Limão", "Leite condensado", "Creme de leite", "Massa branca"],
+      leadHours: 4,
+      stock: 0,
+      active: true,
+      featured: false,
+      badges: [],
+    },
+    {
+      id: "bp-prestigio",
+      name: "Bolo de Pote Prestígio",
+      category: "bolos-de-pote",
+      flavor: "chocolate",
+      price: 16.9,
+      image: IMG + "bolos-pote-variados.jpg",
+      shortDesc: "Chocolate com recheio de coco cremoso.",
+      description:
+        "Para quem ama chocolate com coco: massa de chocolate, brigadeiro e recheio cremoso de coco.",
+      ingredients: ["Chocolate", "Coco", "Leite condensado", "Massa de chocolate"],
+      leadHours: 4,
+      stock: 20,
+      active: true,
+      featured: false,
+      badges: [],
+    },
+    {
+      id: "bolo-ninho-nutella",
+      name: "Bolo Inteiro Ninho com Nutella",
+      category: "bolos-inteiros",
+      flavor: "ninho",
+      price: 129.9,
+      image: IMG + "bolo-pote-ninho-geleia.jpg",
+      shortDesc: "Bolo de aniversário, 15cm, serve até 15 fatias.",
+      description:
+        "Bolo inteiro sob encomenda: massa branca, recheio de Ninho e Nutella, cobertura decorada. Ideal para festas. Encomende com 48h de antecedência.",
+      ingredients: ["Leite Ninho", "Nutella", "Massa branca", "Chantilly"],
+      leadHours: 48,
+      stock: 5,
+      active: true,
+      featured: true,
+      badges: ["Sob encomenda"],
+    },
+    {
+      id: "bolo-chocolate",
+      name: "Bolo Inteiro de Chocolate",
+      category: "bolos-inteiros",
+      flavor: "chocolate",
+      price: 119.9,
+      image: IMG + "copo-felicidade-oreo.jpg",
+      shortDesc: "Bolo de chocolate com brigadeiro, serve até 15 fatias.",
+      description:
+        "Massa de chocolate úmida com recheio de brigadeiro cremoso e cobertura de ganache. Encomende com 48h de antecedência.",
+      ingredients: ["Chocolate", "Brigadeiro", "Ganache", "Massa de chocolate"],
+      leadHours: 48,
+      stock: 4,
+      active: true,
+      featured: false,
+      badges: ["Sob encomenda"],
+    },
+    {
+      id: "brig-caixa",
+      name: "Caixa de Brigadeiros Gourmet (12un)",
+      category: "doces",
+      flavor: "chocolate",
+      price: 42.0,
+      image: IMG + "bolo-pote-romeu-julieta.jpg",
+      shortDesc: "12 brigadeiros gourmet sortidos.",
+      description:
+        "Caixa com 12 brigadeiros gourmet: tradicional, beijinho, ninho, nutella e mais. Perfeitos para presentear.",
+      ingredients: ["Chocolate nobre", "Leite condensado", "Creme de leite", "Granulado belga"],
+      leadHours: 6,
+      stock: 30,
+      active: true,
+      featured: true,
+      badges: ["Para presentear"],
+    },
+    {
+      id: "brig-morango",
+      name: "Morango do Amor (6un)",
+      category: "doces",
+      flavor: "morango",
+      price: 36.0,
+      image: IMG + "bolo-pote-maracuja.jpg",
+      shortDesc: "Morangos cobertos com brigadeiro e casquinha crocante.",
+      description:
+        "Morangos selecionados envolvidos em brigadeiro branco e casquinha crocante de caramelo. A sensação do momento.",
+      ingredients: ["Morango", "Brigadeiro branco", "Caramelo"],
+      leadHours: 8,
+      stock: 0,
+      active: true,
+      featured: false,
+      badges: [],
+    },
+    {
+      id: "cp-ninho",
+      name: "Copo da Felicidade Ninho",
+      category: "copos-da-felicidade",
+      flavor: "ninho",
+      price: 18.9,
+      image: IMG + "bolo-pote-ninho-geleia.jpg",
+      shortDesc: "Creme de Ninho, morango e cobertura branca.",
+      description:
+        "Creme de Ninho aveludado com pedaços de morango e cobertura cremosa. Uma taça de felicidade em camadas.",
+      ingredients: ["Leite Ninho", "Morango", "Leite condensado", "Creme de leite"],
+      leadHours: 4,
+      stock: 16,
+      active: true,
+      featured: false,
+      badges: [],
+    },
+    {
+      id: "cp-choco",
+      name: "Copo da Felicidade Chocolate",
+      category: "copos-da-felicidade",
+      flavor: "chocolate",
+      price: 18.9,
+      image: IMG + "copo-felicidade-oreo.jpg",
+      shortDesc: "Brigadeiro cremoso, creme e cobertura de chocolate.",
+      description:
+        "Para os amantes de chocolate: camadas de brigadeiro cremoso, creme aveludado e ganache por cima.",
+      ingredients: ["Chocolate nobre", "Brigadeiro", "Creme de leite", "Cacau"],
+      leadHours: 4,
+      stock: 22,
+      active: false,
+      featured: false,
+      badges: [],
+    },
+  ];
+
+  NG.flavors = [
+    { value: "chocolate", label: "Chocolate" },
+    { value: "ninho", label: "Ninho" },
+    { value: "maracuja", label: "Maracujá" },
+    { value: "morango", label: "Morango" },
+    { value: "limao", label: "Limão" },
+    { value: "queijo", label: "Queijo/Goiabada" },
+  ];
+
+  // Cliente demo
+  NG.demoCustomer = {
+    id: "cli-001",
+    name: "Marina Almeida",
+    email: "marina@email.com",
+    phone: "(11) 97777-1234",
+    password: "123456",
+    avatar: "",
+    addresses: [
+      {
+        id: "end-1",
+        label: "Casa",
+        cep: "03100-000",
+        street: "Rua das Acácias",
+        number: "45",
+        complement: "Apto 32",
+        district: "Vila Doce",
+        city: "São Paulo",
+        state: "SP",
+        primary: true,
+      },
+      {
+        id: "end-2",
+        label: "Trabalho",
+        cep: "01310-000",
+        street: "Av. Paulista",
+        number: "1000",
+        complement: "Sala 5",
+        district: "Bela Vista",
+        city: "São Paulo",
+        state: "SP",
+        primary: false,
+      },
+    ],
+  };
+
+  // Admin demo
+  NG.demoAdmin = { email: "admin@ngduodoce.com.br", password: "admin123", name: "Equipe NG" };
+
+  // Pedidos demo (para cliente e admin)
+  NG.demoOrders = [
+    {
+      id: "NG-1042",
+      customer: "Marina Almeida",
+      customerId: "cli-001",
+      date: "2026-09-14T15:30:00",
+      mode: "entrega",
+      status: "em_preparacao",
+      items: [
+        { id: "cp-oreo", name: "Copo da Felicidade Oreo", qty: 2, price: 18.9 },
+        { id: "bp-maracuja", name: "Bolo de Pote de Maracujá", qty: 1, price: 15.9 },
+      ],
+      address: "Rua das Acácias, 45 - Apto 32, Vila Doce",
+      schedule: { date: "2026-09-16", time: "16:00" },
+      payment: { method: "pix", status: "approved" },
+      deliveryFee: 8.9,
+      discount: 0,
+    },
+    {
+      id: "NG-1039",
+      customer: "Marina Almeida",
+      customerId: "cli-001",
+      date: "2026-09-10T11:00:00",
+      mode: "retirada",
+      status: "retirado",
+      items: [{ id: "brig-caixa", name: "Caixa de Brigadeiros Gourmet (12un)", qty: 1, price: 42.0 }],
+      address: "Retirada na loja",
+      schedule: { date: "2026-09-11", time: "14:00" },
+      payment: { method: "credito", status: "approved" },
+      deliveryFee: 0,
+      discount: 5,
+    },
+    {
+      id: "NG-1051",
+      customer: "João Pereira",
+      customerId: "cli-002",
+      date: "2026-09-16T09:20:00",
+      mode: "entrega",
+      status: "pedido_recebido",
+      items: [{ id: "bolo-ninho-nutella", name: "Bolo Inteiro Ninho com Nutella", qty: 1, price: 129.9 }],
+      address: "Rua Verde, 200, Centro",
+      schedule: { date: "2026-09-18", time: "18:00" },
+      payment: { method: "pix", status: "pending" },
+      deliveryFee: 8.9,
+      discount: 0,
+    },
+    {
+      id: "NG-1055",
+      customer: "Carla Souza",
+      customerId: "cli-003",
+      date: "2026-09-16T13:10:00",
+      mode: "entrega",
+      status: "saiu_para_entrega",
+      items: [
+        { id: "cp-ninho", name: "Copo da Felicidade Ninho", qty: 3, price: 18.9 },
+      ],
+      address: "Alameda Rosa, 88, Jardim",
+      schedule: { date: "2026-09-16", time: "17:00" },
+      payment: { method: "debito", status: "approved" },
+      deliveryFee: 8.9,
+      discount: 0,
+    },
+  ];
+
+  NG.demoCustomers = [
+    { id: "cli-001", name: "Marina Almeida", email: "marina@email.com", phone: "(11) 97777-1234", orders: 8, total: 642.3, since: "2025-03-12", status: "ativo" },
+    { id: "cli-002", name: "João Pereira", email: "joao@email.com", phone: "(11) 96666-2222", orders: 2, total: 259.8, since: "2026-08-01", status: "ativo" },
+    { id: "cli-003", name: "Carla Souza", email: "carla@email.com", phone: "(11) 95555-3333", orders: 5, total: 388.5, since: "2025-11-20", status: "ativo" },
+    { id: "cli-004", name: "Rafael Lima", email: "rafael@email.com", phone: "(11) 94444-4444", orders: 1, total: 42.0, since: "2026-09-05", status: "inativo" },
+  ];
+
+  // Rótulos de status de pedido
+  NG.orderStatus = {
+    pedido_recebido: "Pedido recebido",
+    pagamento_confirmado: "Pagamento confirmado",
+    em_preparacao: "Em preparação",
+    pedido_pronto: "Pedido pronto",
+    saiu_para_entrega: "Saiu para entrega",
+    aguardando_retirada: "Aguardando retirada",
+    entregue: "Entregue",
+    retirado: "Retirado",
+    cancelado: "Cancelado",
+  };
+})((window.NG = window.NG || {}));

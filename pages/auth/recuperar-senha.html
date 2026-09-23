@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recuperar senha — NG Doce Duo</title>
+  <meta name="description" content="Recupere o acesso à sua conta NG Doce Duo." />
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+  <main id="main" class="page-main">
+    <div class="container">
+      <div class="form-card" data-recovery></div>
+    </div>
+  </main>
+  <div data-layout="footer"></div>
+
+  <script src="../../js/include.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        var root = NG.qs("[data-recovery]");
+        var email = "";
+
+        function stepEmail() {
+          root.innerHTML =
+            '<div class="form-card__head"><h1>Esqueceu a senha?</h1><p>Informe seu e-mail e enviaremos um código de 8 dígitos.</p></div>' +
+            '<div data-alert></div>' +
+            '<form data-form novalidate><div class="field"><label for="email">E-mail <span class="req">*</span></label>' +
+            '<input id="email" class="input" type="email" data-validate="required email" placeholder="voce@email.com"></div>' +
+            '<button class="btn btn--primary btn--block" type="submit" data-submit>Enviar código</button>' +
+            '<p class="text-center text-small mt-6"><a class="link" href="login.html">Voltar ao login</a></p></form>';
+          var form = NG.qs("[data-form]");
+          NG.validation.bindForm(form);
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            if (!NG.validation.validateForm(form)) return;
+            var btn = NG.qs("[data-submit]"); btn.classList.add("is-loading");
+            setTimeout(function () {
+              btn.classList.remove("is-loading");
+              var res = NG.authService.requestReset(NG.qs("#email").value);
+              if (!res.ok) { NG.qs("[data-alert]").innerHTML = alertDanger(res.error); return; }
+              email = NG.qs("#email").value;
+              stepCode(res.code);
+            }, 500);
+          });
+        }
+
+        function stepCode(demoCode) {
+          root.innerHTML =
+            '<div class="form-card__head"><h1>Digite o código</h1><p>Enviamos um código de 8 dígitos para <strong>' + NG.escape(email) + "</strong>.</p></div>" +
+            '<div class="alert alert--info">' + NG.icon("info", {}) + "<div>Ambiente demo: seu código é <strong>" + demoCode + "</strong></div></div>" +
+            '<div data-alert></div>' +
+            '<form data-form novalidate><div class="field"><label class="visually-hidden" for="otp0">Código de 8 dígitos</label>' +
+            '<div class="otp" data-otp>' +
+              Array.from({ length: 8 }).map(function (_, i) { return '<input id="otp' + i + '" inputmode="numeric" maxlength="1" aria-label="Dígito ' + (i + 1) + '">'; }).join("") +
+            "</div></div>" +
+            '<button class="btn btn--primary btn--block mt-6" type="submit" data-submit>Validar código</button>' +
+            '<p class="text-center text-small mt-6"><button type="button" class="link" data-resend>Reenviar código</button> · <button type="button" class="link" data-back>Trocar e-mail</button></p></form>';
+
+          var inputs = NG.qsa("[data-otp] input");
+          inputs[0].focus();
+          inputs.forEach(function (inp, i) {
+            inp.addEventListener("input", function () {
+              inp.value = inp.value.replace(/\D/g, "");
+              if (inp.value && i < inputs.length - 1) inputs[i + 1].focus();
+            });
+            inp.addEventListener("keydown", function (e) {
+              if (e.key === "Backspace" && !inp.value && i > 0) inputs[i - 1].focus();
+            });
+            inp.addEventListener("paste", function (e) {
+              var txt = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 8);
+              if (txt) { e.preventDefault(); txt.split("").forEach(function (c, k) { if (inputs[k]) inputs[k].value = c; }); inputs[Math.min(txt.length, 7)].focus(); }
+            });
+          });
+
+          var form = NG.qs("[data-form]");
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var code = inputs.map(function (i) { return i.value; }).join("");
+            var msg = NG.validation.rules.otp8(code);
+            if (msg) { NG.qs("[data-alert]").innerHTML = alertDanger(msg); return; }
+            var res = NG.authService.verifyReset(code);
+            if (!res.ok) { NG.qs("[data-alert]").innerHTML = alertDanger(res.error); return; }
+            stepNewPassword();
+          });
+          NG.qs("[data-resend]").addEventListener("click", function () {
+            var r = NG.authService.requestReset(email);
+            if (r.ok) { NG.toast({ type: "success", message: "Novo código enviado." }); stepCode(r.code); }
+          });
+          NG.qs("[data-back]").addEventListener("click", stepEmail);
+        }
+
+        function stepNewPassword() {
+          root.innerHTML =
+            '<div class="form-card__head"><h1>Nova senha</h1><p>Crie uma senha nova para sua conta.</p></div>' +
+            '<div data-alert></div>' +
+            '<form data-form novalidate>' +
+            '<div class="field"><label for="s1">Nova senha <span class="req">*</span></label><input id="s1" class="input" type="password" data-validate="required password" placeholder="Mín. 6 caracteres"></div>' +
+            '<div class="field"><label for="s2">Confirmar senha <span class="req">*</span></label><input id="s2" class="input" type="password" data-validate="required" data-match="#s1" placeholder="Repita a senha"></div>' +
+            '<button class="btn btn--primary btn--block mt-4" type="submit" data-submit>Salvar nova senha</button></form>';
+          var form = NG.qs("[data-form]");
+          NG.validation.bindForm(form);
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            if (!NG.validation.validateForm(form)) return;
+            NG.authService.resetPassword(NG.qs("#s1").value);
+            stepSuccess();
+          });
+        }
+
+        function stepSuccess() {
+          root.innerHTML =
+            '<div class="state" style="padding:24px 0">' +
+            '<div class="state__icon" style="color:var(--color-success)">' + NG.icon("check", { size: 64 }) + "</div>" +
+            "<h2>Senha alterada!</h2><p>Sua senha foi redefinida com sucesso. Você já pode entrar com a nova senha.</p>" +
+            '<a class="btn btn--primary btn--inline" href="login.html">Ir para o login</a></div>';
+        }
+
+        function alertDanger(msg) {
+          return '<div class="alert alert--danger">' + NG.icon("alert", {}) + "<div>" + NG.escape(msg) + "</div></div>";
+        }
+
+        stepEmail();
+      },
+    };
+  </script>
+</body>
+</html>

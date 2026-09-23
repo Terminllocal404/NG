@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Clientes — Admin NG Doce Duo</title>
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body data-no-layout>
+  <script src="../../js/include.js"></script>
+  <script src="../../js/admin.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireAdmin()) return;
+        var q = "";
+        NG.adminShell("clientes", "Clientes",
+          '<div class="card" style="margin-bottom:24px"><div class="input-group" style="max-width:360px"><input class="input" placeholder="Buscar cliente" data-q><span class="input-group__addon" data-ic></span></div></div><div data-wrap></div>');
+        NG.qs("[data-ic]").innerHTML = NG.icon("search", { size: 20 });
+        NG.qs("[data-q]").addEventListener("input", function (e) { q = e.target.value; render(); });
+
+        function render() {
+          var list = NG.customerService.search(q);
+          var wrap = NG.qs("[data-wrap]");
+          if (!list.length) { wrap.innerHTML = '<div class="card">' + NG.emptyState({ icon: "users", title: "Nenhum cliente", message: "Nenhum cliente corresponde à busca." }) + "</div>"; return; }
+          wrap.innerHTML = '<div class="data-table"><table><thead><tr><th>Cliente</th><th>E-mail</th><th>Telefone</th><th>Pedidos</th><th>Total gasto</th><th>Status</th><th></th></tr></thead><tbody>' +
+            list.map(function (c) {
+              return "<tr><td><strong>" + NG.escape(c.name) + "</strong></td><td>" + NG.escape(c.email) + "</td><td>" + c.phone + "</td><td>" + c.orders + "</td><td>" + NG.money(c.total) + "</td>" +
+                "<td>" + (c.status === "ativo" ? '<span class="badge badge--success">Ativo</span>' : '<span class="badge badge--neutral">Inativo</span>') + '</td><td><a class="btn btn--ghost btn--sm btn--inline" href="cliente-detalhe.html?id=' + c.id + '">Ver</a></td></tr>';
+            }).join("") + "</tbody></table></div>";
+        }
+        render();
+      },
+    };
+  </script>
+</body>
+</html>

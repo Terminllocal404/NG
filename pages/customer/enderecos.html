@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meus endereços — NG Doce Duo</title>
+  <meta name="description" content="Gerencie seus endereços de entrega na NG Doce Duo." />
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+  <main id="main" class="page-main">
+    <div class="container section">
+      <nav class="breadcrumb"><a href="../../index.html">Home</a><span class="sep">›</span><a href="perfil.html">Minha conta</a><span class="sep">›</span><span aria-current="page">Endereços</span></nav>
+      <h1 style="margin-bottom:24px">Meus endereços</h1>
+      <div class="split">
+        <aside class="card card--flat" data-account-nav></aside>
+        <section>
+          <div class="flex-between" style="margin-bottom:16px">
+            <h2>Endereços salvos</h2>
+            <button class="btn btn--primary btn--inline" data-add></button>
+          </div>
+          <div class="stack" data-list style="gap:16px"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <div data-layout="footer"></div>
+
+  <script src="../../js/include.js"></script>
+  <script src="../../js/customer.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireCustomer()) return;
+        NG.qs("[data-account-nav]").innerHTML = NG.accountNav("enderecos");
+        NG.qs("[data-add]").innerHTML = NG.icon("plus", { size: 18 }) + " Adicionar endereço";
+        NG.qs("[data-add]").addEventListener("click", function () { openForm(); });
+        render();
+
+        function getUser() { return NG.authService.getCustomer(); }
+
+        function render() {
+          var user = getUser();
+          var list = NG.qs("[data-list]");
+          var addrs = user.addresses || [];
+          if (!addrs.length) {
+            list.innerHTML = NG.emptyState({
+              icon: "map",
+              title: "Nenhum endereço cadastrado",
+              message: "Adicione um endereço para agilizar suas entregas.",
+              actionHtml: '<button class="btn btn--primary btn--inline" data-add-inline>Adicionar endereço</button>',
+            });
+            NG.qs("[data-add-inline]").addEventListener("click", function () { openForm(); });
+            return;
+          }
+          list.innerHTML = addrs.map(function (a) {
+            return (
+              '<div class="card"><div class="flex-between flex-wrap">' +
+              "<div><div class=\"flex items-center\" style=\"gap:8px\"><strong>" + NG.escape(a.label) + "</strong>" +
+              (a.primary ? '<span class="badge badge--success">Principal</span>' : "") + "</div>" +
+              '<p class="text-small text-soft mt-4">' + NG.escape(a.street + ", " + a.number + (a.complement ? " - " + a.complement : "")) + "<br>" + NG.escape(a.district + ", " + a.city + "/" + a.state + " · " + a.cep) + "</p></div>" +
+              '<div class="flex" style="gap:8px">' +
+                (a.primary ? "" : '<button class="btn btn--ghost btn--sm btn--inline" data-primary="' + a.id + '">Tornar principal</button>') +
+                '<button class="btn btn--ghost btn--sm btn--inline" data-edit="' + a.id + '">' + NG.icon("edit", { size: 16 }) + "</button>" +
+                '<button class="btn btn--ghost btn--sm btn--inline" data-del="' + a.id + '" style="color:var(--color-danger)">' + NG.icon("trash", { size: 16 }) + "</button>" +
+              "</div></div></div>"
+            );
+          }).join("");
+
+          NG.qsa("[data-edit]").forEach(function (b) { b.addEventListener("click", function () { openForm(b.dataset.edit); }); });
+          NG.qsa("[data-del]").forEach(function (b) { b.addEventListener("click", function () { del(b.dataset.del); }); });
+          NG.qsa("[data-primary]").forEach(function (b) { b.addEventListener("click", function () { setPrimary(b.dataset.primary); }); });
+        }
+
+        function save(addrs) { NG.authService.updateProfile({ addresses: addrs }); }
+
+        function setPrimary(id) {
+          var addrs = getUser().addresses.map(function (a) { return Object.assign({}, a, { primary: a.id === id }); });
+          save(addrs); render();
+          NG.toast({ type: "success", message: "Endereço principal atualizado." });
+        }
+
+        function del(id) {
+          var addr = getUser().addresses.find(function (a) { return a.id === id; });
+          NG.confirm({ title: "Excluir endereço", message: "Excluir o endereço \"" + addr.label + "\"?", confirmLabel: "Excluir", danger: true }).then(function (ok) {
+            if (!ok) return;
+            save(getUser().addresses.filter(function (a) { return a.id !== id; }));
+            render();
+            NG.toast({ message: "Endereço excluído." });
+          });
+        }
+
+        function openForm(id) {
+          var editing = id ? getUser().addresses.find(function (a) { return a.id === id; }) : null;
+          NG.modal({
+            title: editing ? "Editar endereço" : "Adicionar endereço",
+            body:
+              '<form data-addr-form>' +
+              '<div class="field"><label for="f-label">Identificação</label><input id="f-label" class="input" data-validate="required" value="' + (editing ? NG.escape(editing.label) : "") + '"></div>' +
+              '<div class="form-row"><div class="field"><label for="f-cep">CEP</label><input id="f-cep" class="input" data-mask="cep" data-validate="required cep" value="' + (editing ? editing.cep : "") + '"></div>' +
+              '<div class="field"><label for="f-num">Número</label><input id="f-num" class="input" data-validate="required number" value="' + (editing ? NG.escape(editing.number) : "") + '"></div></div>' +
+              '<div class="field"><label for="f-street">Rua</label><input id="f-street" class="input" data-validate="required" value="' + (editing ? NG.escape(editing.street) : "") + '"></div>' +
+              '<div class="field"><label for="f-comp">Complemento</label><input id="f-comp" class="input" value="' + (editing ? NG.escape(editing.complement || "") : "") + '"></div>' +
+              '<div class="form-row"><div class="field"><label for="f-dist">Bairro</label><input id="f-dist" class="input" data-validate="required" value="' + (editing ? NG.escape(editing.district) : "") + '"></div>' +
+              '<div class="field"><label for="f-city">Cidade</label><input id="f-city" class="input" data-validate="required" value="' + (editing ? NG.escape(editing.city) : "") + '"></div></div>' +
+              "</form>",
+            footer: '<button class="btn btn--secondary btn--inline" data-close type="button">Cancelar</button><button class="btn btn--primary btn--inline" data-save type="button">Salvar</button>',
+            onMount: function (el, close) {
+              var form = el.querySelector("[data-addr-form]");
+              NG.validation.bindForm(form);
+              el.querySelector("[data-save]").addEventListener("click", function () {
+                if (!NG.validation.validateForm(form)) return;
+                var addrs = getUser().addresses || [];
+                var data = {
+                  label: NG.qs("#f-label").value, cep: NG.qs("#f-cep").value, street: NG.qs("#f-street").value,
+                  number: NG.qs("#f-num").value, complement: NG.qs("#f-comp").value, district: NG.qs("#f-dist").value,
+                  city: NG.qs("#f-city").value, state: "SP",
+                };
+                if (editing) {
+                  addrs = addrs.map(function (a) { return a.id === id ? Object.assign({}, a, data) : a; });
+                } else {
+                  data.id = NG.uid("end"); data.primary = addrs.length === 0;
+                  addrs.push(data);
+                }
+                save(addrs); close(); render();
+                NG.toast({ type: "success", message: editing ? "Endereço atualizado." : "Endereço adicionado." });
+              });
+            },
+          });
+        }
+      },
+    };
+  </script>
+</body>
+</html>

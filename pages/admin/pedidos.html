@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Pedidos — Admin NG Doce Duo</title>
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body data-no-layout>
+  <script src="../../js/include.js"></script>
+  <script src="../../js/admin.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireAdmin()) return;
+        var state = { q: "", status: "" };
+
+        NG.adminShell("pedidos", "Pedidos",
+          '<div class="card" style="margin-bottom:24px"><div class="flex flex-wrap" style="gap:12px">' +
+          '<div class="input-group" style="flex:1;min-width:220px"><input class="input" placeholder="Buscar por número ou cliente" data-q><span class="input-group__addon" data-search-ic></span></div>' +
+          '<select class="select" data-status style="max-width:220px"><option value="">Todos os status</option></select>' +
+          "</div></div><div data-table-wrap></div>");
+
+        NG.qs("[data-search-ic]").innerHTML = NG.icon("search", { size: 20 });
+        var sel = NG.qs("[data-status]");
+        Object.keys(NG.orderStatus).forEach(function (k) {
+          var o = document.createElement("option"); o.value = k; o.textContent = NG.orderStatus[k]; sel.appendChild(o);
+        });
+
+        NG.qs("[data-q]").addEventListener("input", function (e) { state.q = e.target.value.toLowerCase(); render(); });
+        sel.addEventListener("change", function (e) { state.status = e.target.value; render(); });
+
+        function render() {
+          var orders = NG.orderService.all().filter(function (o) {
+            var okQ = !state.q || o.id.toLowerCase().includes(state.q) || o.customer.toLowerCase().includes(state.q);
+            var okS = !state.status || o.status === state.status;
+            return okQ && okS;
+          });
+          var wrap = NG.qs("[data-table-wrap]");
+          if (!orders.length) {
+            wrap.innerHTML = '<div class="card">' + NG.emptyState({ icon: "box", title: "Nenhum pedido encontrado", message: "Ajuste a busca ou os filtros." }) + "</div>";
+            return;
+          }
+          wrap.innerHTML = '<div class="data-table"><table><thead><tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Modalidade</th><th>Total</th><th>Pagamento</th><th>Status</th><th></th></tr></thead><tbody>' +
+            orders.map(function (o) {
+              return '<tr><td><strong>' + o.id + '</strong></td><td>' + NG.escape(o.customer) + '</td><td>' + NG.dateBR(o.date) + '</td><td>' + (o.mode === "entrega" ? "Entrega" : "Retirada") + '</td><td>' + NG.money(NG.orderService.total(o)) + '</td><td>' + NG.paymentStatusBadge(o.payment.status) + '</td><td>' + NG.statusBadge(o.status) + '</td><td><a class="btn btn--ghost btn--sm btn--inline" href="detalhe.html?id=' + o.id + '">Ver</a></td></tr>';
+            }).join("") + "</tbody></table></div>";
+        }
+        render();
+      },
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contato — NG Doce Duo</title>
+  <meta name="description" content="Fale com a NG Doce Duo. Encomendas, dúvidas e parcerias." />
+  <link rel="icon" href="../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+  <main id="main" class="page-main">
+    <div class="container section">
+      <nav class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span><span aria-current="page">Contato</span></nav>
+      <div class="section-head"><div><h1>Fale com a gente</h1><p>Encomendas, dúvidas ou só um oi doce — a gente adora conversar.</p></div></div>
+      <div class="split--checkout">
+        <form class="card" data-form novalidate>
+          <div data-alert></div>
+          <div class="form-row">
+            <div class="field"><label for="nome">Nome <span class="req">*</span></label><input id="nome" class="input" data-validate="required"></div>
+            <div class="field"><label for="tel">Telefone <span class="req">*</span></label><input id="tel" class="input" data-mask="phone" data-validate="required phone"></div>
+          </div>
+          <div class="field"><label for="email">E-mail <span class="req">*</span></label><input id="email" class="input" type="email" data-validate="required email"></div>
+          <div class="field"><label for="msg">Mensagem <span class="req">*</span></label><textarea id="msg" class="textarea" data-validate="required" placeholder="Conte pra gente o que você precisa..."></textarea></div>
+          <button class="btn btn--primary btn--inline" type="submit">Enviar mensagem</button>
+        </form>
+        <aside class="card card--flat">
+          <h3>Atendimento</h3><div class="divider"></div>
+          <p class="text-small" data-phone></p>
+          <p class="text-small mt-4" data-hours></p>
+          <p class="text-small mt-4" data-addr></p>
+        </aside>
+      </div>
+    </div>
+  </main>
+  <div data-layout="footer"></div>
+
+  <script src="../js/include.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "contato",
+      init: function () {
+        var s = NG.store;
+        NG.qs("[data-phone]").innerHTML = NG.icon("phone", { size: 16 }) + " " + s.phone;
+        NG.qs("[data-hours]").innerHTML = NG.icon("clock", { size: 16 }) + " " + s.hours;
+        NG.qs("[data-addr]").innerHTML = NG.icon("map", { size: 16 }) + " " + s.address.street + ", " + s.address.district + ", " + s.address.city + "/" + s.address.state;
+        var form = NG.qs("[data-form]");
+        NG.validation.bindForm(form);
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!NG.validation.validateForm(form)) return;
+          NG.qs("[data-alert]").innerHTML = '<div class="alert alert--success">' + NG.icon("check", {}) + "<div>Mensagem enviada! Retornaremos em breve. 🤍</div></div>";
+          form.reset();
+        });
+      },
+    };
+  </script>
+</body>
+</html>

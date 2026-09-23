@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finalizar pedido — NG Doce Duo</title>
+  <meta name="description" content="Finalize seu pedido na NG Doce Duo: escolha entrega ou retirada, agende e pague com PIX ou cartão." />
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+  <main id="main" class="page-main">
+    <div class="container section">
+      <nav class="breadcrumb"><a href="../../index.html">Home</a><span class="sep">›</span><a href="sacola.html">Sacola</a><span class="sep">›</span><span aria-current="page">Finalizar</span></nav>
+      <h1 style="margin-bottom:24px">Finalizar pedido</h1>
+      <div data-checkout-root></div>
+    </div>
+  </main>
+  <div data-layout="footer"></div>
+
+  <script src="../../js/include.js"></script>
+  <script src="../../js/checkout.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireCustomer()) return;
+        NG.checkout.mount(NG.qs("[data-checkout-root]"));
+      },
+    };
+  </script>
+</body>
+</html>

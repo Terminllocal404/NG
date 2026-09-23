@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Produto — NG Doce Duo</title>
+  <meta name="description" content="Detalhes do produto NG Doce Duo." />
+  <link rel="icon" href="../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+  <main id="main" class="page-main">
+    <div class="container" data-product></div>
+    <div class="container section" data-related-wrap hidden>
+      <div class="section-head"><h2>Você também vai amar</h2></div>
+      <div class="grid grid-products" data-related></div>
+    </div>
+  </main>
+  <div data-layout="footer"></div>
+
+  <script src="../js/include.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "catalogo",
+      init: function () {
+        var id = NG.param("id");
+        var wrap = NG.qs("[data-product]");
+        wrap.innerHTML =
+          '<div class="section product-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:48px">' +
+          '<div class="skeleton" style="aspect-ratio:4/3"></div>' +
+          '<div><div class="skeleton skeleton--title"></div><div class="skeleton skeleton--text"></div><div class="skeleton skeleton--text"></div></div></div>';
+
+        NG.productService.get(id).then(function (p) {
+          if (!p) {
+            wrap.innerHTML =
+              '<div class="section">' +
+              NG.emptyState({
+                icon: "box",
+                title: "Produto não encontrado",
+                message: "Esse docinho não está mais disponível ou o endereço está incorreto.",
+                actionHtml: '<a class="btn btn--primary btn--inline" href="catalogo.html">Voltar ao catálogo</a>',
+              }) + "</div>";
+            return;
+          }
+          render(p);
+          loadRelated(p);
+        });
+
+        function render(p) {
+          var av = NG.availability(p);
+          var canBuy = av.state === "disponivel" || av.state === "baixo";
+          var badgeMap = {
+            disponivel: '<span class="badge badge--success">' + NG.icon("check", { size: 14 }) + " Disponível</span>",
+            baixo: '<span class="badge badge--warning">Últimas unidades</span>',
+            esgotado: '<span class="badge badge--danger">Esgotado</span>',
+            indisponivel: '<span class="badge badge--neutral">Indisponível no momento</span>',
+          };
+
+          var actions = canBuy
+            ? '<div class="flex flex-wrap items-center" style="gap:16px;margin-top:24px">' +
+                '<div class="qty" role="group" aria-label="Quantidade">' +
+                  '<button type="button" data-q="-" aria-label="Diminuir">' + NG.icon("minus", { size: 20 }) + "</button>" +
+                  '<input type="text" value="1" data-qty readonly aria-label="Quantidade">' +
+                  '<button type="button" data-q="+" aria-label="Aumentar">' + NG.icon("plus", { size: 20 }) + "</button>" +
+                "</div>" +
+                '<button class="btn btn--primary btn--inline" data-add-detail>' + NG.icon("cart", { size: 18 }) + " Adicionar à sacola</button>" +
+                '<button class="btn btn--secondary btn--inline" data-buy-now>Comprar agora</button>' +
+              "</div>"
+            : '<div class="alert alert--warning" style="margin-top:24px">' + NG.icon("alert", {}) +
+              "<div><strong>" + (av.state === "esgotado" ? "Produto esgotado" : "Produto indisponível") + "</strong><br>" +
+              (av.state === "esgotado"
+                ? "Este doce esgotou por enquanto. Volte em breve — repomos com frequência!"
+                : "Este item está temporariamente fora do cardápio.") +
+              "</div></div>" +
+              '<a class="btn btn--secondary btn--inline mt-6" href="catalogo.html">Ver outros doces</a>';
+
+          var lead = p.leadHours >= 48
+            ? "Sob encomenda · pronto em até 48h"
+            : "Pronto em até " + p.leadHours + "h";
+
+          wrap.innerHTML =
+            '<nav class="breadcrumb"><a href="../index.html">Home</a><span class="sep">›</span>' +
+            '<a href="catalogo.html?cat=' + p.category + '">' + NG.categoryName(p.category) + "</a>" +
+            '<span class="sep">›</span><span aria-current="page">' + NG.escape(p.name) + "</span></nav>" +
+            '<div class="section product-layout" style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start">' +
+              '<div><img src="' + NG.url(p.image) + '" alt="' + NG.escape(p.name) + '" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius-card);box-shadow:var(--shadow)"></div>' +
+              "<div>" +
+                '<span class="product-card__cat">' + NG.categoryName(p.category) + "</span>" +
+                "<h1 style=\"margin:8px 0 12px\">" + NG.escape(p.name) + "</h1>" +
+                '<div class="flex items-center" style="gap:12px">' + badgeMap[av.state] +
+                  '<span class="text-small text-soft">' + NG.icon("clock", { size: 16 }) + " " + lead + "</span></div>" +
+                '<p class="mt-6" style="font-size:17px;color:var(--color-sage)">' + NG.escape(p.description) + "</p>" +
+                '<div style="font-family:var(--font-title);font-weight:700;font-size:32px;color:var(--color-chocolate-dark);margin-top:24px">' + NG.money(p.price) + "</div>" +
+                '<p class="text-small text-soft">ou em até 3x de ' + NG.money(p.price / 3) + " sem juros</p>" +
+                actions +
+                '<div class="tabs mt-8" role="tablist">' +
+                  '<button class="tab is-active" data-tab="desc" role="tab">Detalhes</button>' +
+                  '<button class="tab" data-tab="ing" role="tab">Ingredientes</button>' +
+                  '<button class="tab" data-tab="ent" role="tab">Entrega & retirada</button>' +
+                "</div>" +
+                '<div data-tabpanel="desc"><p class="text-soft">' + NG.escape(p.description) + "</p></div>" +
+                '<div data-tabpanel="ing" hidden><ul class="stack" style="gap:8px">' +
+                  p.ingredients.map(function (i) { return '<li class="flex items-center" style="gap:8px">' + NG.icon("check", { size: 16 }) + " " + NG.escape(i) + "</li>"; }).join("") +
+                "</ul></div>" +
+                '<div data-tabpanel="ent" hidden><p class="text-soft">Entrega por motoboy (taxa a partir de ' + NG.money(NG.store.deliveryFee) + ") ou retirada na loja. Escolha data e horário no checkout. " +
+                  (p.leadHours >= 48 ? "Este item é sob encomenda: peça com 48h de antecedência." : "Disponível para o mesmo dia conforme horário.") + "</p></div>" +
+              "</div>" +
+            "</div>";
+
+          wireInteractions(p, canBuy);
+        }
+
+        function wireInteractions(p, canBuy) {
+          if (canBuy) {
+            var input = NG.qs("[data-qty]");
+            var max = Math.min(NG.cart.MAX_QTY, p.stock);
+            NG.qs('[data-q="-"]').addEventListener("click", function () {
+              input.value = Math.max(1, (+input.value) - 1); syncBtns();
+            });
+            NG.qs('[data-q="+"]').addEventListener("click", function () {
+              input.value = Math.min(max, (+input.value) + 1); syncBtns();
+            });
+            function syncBtns() {
+              NG.qs('[data-q="-"]').disabled = +input.value <= 1;
+              NG.qs('[data-q="+"]').disabled = +input.value >= max;
+            }
+            syncBtns();
+            NG.qs("[data-add-detail]").addEventListener("click", function () {
+              NG.cart.add(p.id, +input.value);
+              NG.toast({ type: "success", title: "Adicionado à sacola", message: p.name, actionLabel: "Ver sacola", onAction: function () { location.href = NG.url("pages/checkout/sacola.html"); } });
+            });
+            NG.qs("[data-buy-now]").addEventListener("click", function () {
+              NG.cart.add(p.id, +input.value);
+              location.href = NG.url("pages/checkout/sacola.html");
+            });
+          }
+          // tabs
+          NG.qsa("[data-tab]").forEach(function (t) {
+            t.addEventListener("click", function () {
+              NG.qsa("[data-tab]").forEach(function (x) { x.classList.remove("is-active"); });
+              t.classList.add("is-active");
+              ["desc", "ing", "ent"].forEach(function (k) {
+                NG.qs('[data-tabpanel="' + k + '"]').hidden = k !== t.dataset.tab;
+              });
+            });
+          });
+        }
+
+        function loadRelated(p) {
+          NG.productService.list({ publicOnly: true, category: p.category }).then(function (items) {
+            var rel = items.filter(function (x) { return x.id !== p.id; }).slice(0, 4);
+            if (!rel.length) return;
+            NG.qs("[data-related-wrap]").hidden = false;
+            NG.qs("[data-related]").innerHTML = rel.map(NG.productCard).join("");
+          });
+        }
+      },
+    };
+  </script>
+</body>
+</html>

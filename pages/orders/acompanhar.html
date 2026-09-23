@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acompanhar pedido — NG Doce Duo</title>
+  <meta name="description" content="Acompanhe em tempo real o preparo do seu pedido." />
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+  <main id="main" class="page-main">
+    <div class="container section" data-track></div>
+  </main>
+  <div data-layout="footer"></div>
+
+  <script src="../../js/include.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        var id = NG.param("id");
+        var o = NG.orderService.get(id);
+        var root = NG.qs("[data-track]");
+        if (!o) {
+          root.innerHTML = NG.emptyState({ icon: "box", title: "Pedido não encontrado", message: "Confira o número do pedido.", actionHtml: '<a class="btn btn--primary btn--inline" href="../customer/pedidos.html">Meus pedidos</a>' });
+          return;
+        }
+        function render() {
+          var current = NG.orderStatus[o.status];
+          root.innerHTML =
+            '<nav class="breadcrumb"><a href="../../index.html">Home</a><span class="sep">›</span><a href="detalhe.html?id=' + o.id + '">Pedido ' + o.id + "</a><span class=\"sep\">›</span><span aria-current=\"page\">Acompanhar</span></nav>" +
+            '<div class="text-center" style="max-width:640px;margin:0 auto 32px"><h1>Seu pedido ' + o.id + "</h1>" +
+            '<p class="text-soft mt-4">Status atual: <strong>' + current + "</strong></p></div>" +
+            '<div class="card" style="max-width:760px;margin:0 auto">' + NG.renderTimeline(o) + "</div>" +
+            '<div class="text-center mt-8"><a class="btn btn--secondary btn--inline" href="detalhe.html?id=' + o.id + '">Ver detalhes do pedido</a></div>' +
+            '<p class="text-center text-small text-soft mt-6">Demonstração: use o botão abaixo para simular o avanço das etapas.</p>' +
+            '<div class="text-center mt-4">' + (isFinal() ? "" : '<button class="btn btn--ghost btn--inline" data-advance>Avançar etapa (demo)</button>') + "</div>";
+          var adv = NG.qs("[data-advance]");
+          if (adv) adv.addEventListener("click", advance);
+        }
+        function isFinal() { return ["entregue", "retirado", "cancelado"].includes(o.status); }
+        function advance() {
+          var flow = NG.statusFlow[o.mode];
+          var idx = flow.indexOf(o.status);
+          if (idx < flow.length - 1) {
+            NG.orderService.updateStatus(o.id, flow[idx + 1]);
+            o = NG.orderService.get(o.id);
+            NG.toast({ type: "success", message: "Pedido atualizado: " + NG.orderStatus[o.status] });
+            render();
+          }
+        }
+        render();
+      },
+    };
+  </script>
+</body>
+</html>

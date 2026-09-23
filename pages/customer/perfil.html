@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minha conta — NG Doce Duo</title>
+  <meta name="description" content="Gerencie seus dados na NG Doce Duo." />
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+  <main id="main" class="page-main">
+    <div class="container section">
+      <nav class="breadcrumb"><a href="../../index.html">Home</a><span class="sep">›</span><span aria-current="page">Minha conta</span></nav>
+      <h1 style="margin-bottom:24px">Minha conta</h1>
+      <div class="split">
+        <aside class="card card--flat" data-account-nav></aside>
+        <section>
+          <div class="card">
+            <h2 style="margin-bottom:24px">Dados pessoais</h2>
+            <div class="flex items-center" style="gap:20px;margin-bottom:24px">
+              <div data-avatar style="width:80px;height:80px;border-radius:50%;background:var(--color-rose-light);display:grid;place-items:center;overflow:hidden;color:var(--color-chocolate);font-family:var(--font-title);font-weight:700;font-size:28px"></div>
+              <div>
+                <label class="btn btn--secondary btn--sm btn--inline" for="avatar-input">Alterar foto</label>
+                <input id="avatar-input" type="file" accept="image/*" hidden />
+                <p class="text-small text-soft mt-4">JPG ou PNG, até 2MB.</p>
+              </div>
+            </div>
+            <form data-profile-form novalidate>
+              <div class="form-row">
+                <div class="field"><label for="nome">Nome completo</label><input id="nome" class="input" data-validate="required" /></div>
+                <div class="field"><label for="tel">Telefone</label><input id="tel" class="input" data-mask="phone" data-validate="required phone" /></div>
+              </div>
+              <div class="field"><label for="email">E-mail</label><input id="email" class="input" type="email" data-validate="required email" /></div>
+              <button class="btn btn--primary btn--inline" type="submit">Salvar alterações</button>
+            </form>
+          </div>
+
+          <div class="card mt-8">
+            <h2 style="margin-bottom:24px">Alterar senha</h2>
+            <form data-password-form novalidate>
+              <div data-pw-alert></div>
+              <div class="field"><label for="s0">Senha atual</label><input id="s0" class="input" type="password" autocomplete="current-password" data-validate="required" /></div>
+              <div class="field"><label for="s1">Nova senha</label><input id="s1" class="input" type="password" autocomplete="new-password" data-validate="required password" /></div>
+              <div class="field"><label for="s2">Confirmar nova senha</label><input id="s2" class="input" type="password" autocomplete="new-password" data-validate="required" data-match="#s1" /></div>
+              <button class="btn btn--primary btn--inline" type="submit">Atualizar senha</button>
+            </form>
+          </div>
+
+          <div class="card mt-8">
+            <div class="flex-between">
+              <div><h3>Sair da conta</h3><p class="text-small text-soft">Você poderá entrar novamente quando quiser.</p></div>
+              <button class="btn btn--secondary btn--inline" data-logout>Sair</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <div data-layout="footer"></div>
+
+  <script src="../../js/include.js"></script>
+  <script src="../../js/customer.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireCustomer()) return;
+        var user = NG.authService.getCustomer();
+        NG.qs("[data-account-nav]").innerHTML = NG.accountNav("perfil");
+        renderAvatar();
+
+        NG.qs("#nome").value = user.name || "";
+        NG.qs("#tel").value = user.phone || "";
+        NG.qs("#email").value = user.email || "";
+
+        var pf = NG.qs("[data-profile-form]");
+        NG.validation.bindForm(pf);
+        pf.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!NG.validation.validateForm(pf)) return;
+          NG.authService.updateProfile({ name: NG.qs("#nome").value, phone: NG.qs("#tel").value, email: NG.qs("#email").value });
+          NG.toast({ type: "success", message: "Dados atualizados com sucesso!" });
+          renderAvatar();
+        });
+
+        var pw = NG.qs("[data-password-form]");
+        NG.validation.bindForm(pw);
+        pw.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!NG.validation.validateForm(pw)) return;
+          var res = NG.authService.changePassword(NG.qs("#s0").value, NG.qs("#s1").value);
+          if (!res.ok) {
+            NG.qs("[data-pw-alert]").innerHTML = '<div class="alert alert--danger">' + NG.icon("alert", {}) + "<div>" + NG.escape(res.error) + "</div></div>";
+            return;
+          }
+          NG.qs("[data-pw-alert]").innerHTML = "";
+          NG.toast({ type: "success", message: "Senha atualizada com sucesso!" });
+          pw.reset();
+        });
+
+        NG.qs("#avatar-input").addEventListener("change", function (e) {
+          var file = e.target.files[0];
+          if (!file) return;
+          if (file.size > 2 * 1024 * 1024) { NG.toast({ type: "danger", message: "Imagem muito grande (máx. 2MB)." }); return; }
+          var reader = new FileReader();
+          reader.onload = function () {
+            NG.authService.updateProfile({ avatar: reader.result });
+            renderAvatar();
+            NG.toast({ type: "success", message: "Foto atualizada!" });
+          };
+          reader.readAsDataURL(file);
+        });
+
+        NG.qs("[data-logout]").addEventListener("click", function () {
+          NG.confirm({ title: "Sair da conta", message: "Deseja realmente sair?", confirmLabel: "Sair" }).then(function (ok) {
+            if (ok) { NG.authService.logout(); location.href = NG.url("index.html"); }
+          });
+        });
+
+        function renderAvatar() {
+          var u = NG.authService.getCustomer();
+          var el = NG.qs("[data-avatar]");
+          if (u.avatar) el.innerHTML = '<img src="' + u.avatar + '" alt="Foto de perfil" style="width:100%;height:100%;object-fit:cover">';
+          else el.textContent = (u.name || "?").charAt(0).toUpperCase();
+        }
+      },
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Pedido — Admin NG Doce Duo</title>
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body data-no-layout>
+  <script src="../../js/include.js"></script>
+  <script src="../../js/admin.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireAdmin()) return;
+        var id = NG.param("id");
+        var o = NG.orderService.get(id);
+        if (!o) {
+          NG.adminShell("pedidos", "Pedido", '<div class="card">' + NG.emptyState({ icon: "box", title: "Pedido não encontrado", message: "Volte para a lista de pedidos.", actionHtml: '<a class="btn btn--primary btn--inline" href="pedidos.html">Ver pedidos</a>' }) + "</div>");
+          return;
+        }
+        build();
+
+        function build() {
+          var flow = NG.statusFlow[o.mode];
+          var options = flow.concat(["cancelado"]).map(function (k) {
+            return '<option value="' + k + '"' + (k === o.status ? " selected" : "") + ">" + NG.orderStatus[k] + "</option>";
+          }).join("");
+
+          var content =
+            '<a class="btn btn--ghost btn--sm btn--inline" href="pedidos.html" style="margin-bottom:16px">' + NG.icon("arrowLeft", { size: 16 }) + " Voltar</a>" +
+            '<div class="split--checkout">' +
+              "<div>" +
+                '<div class="card"><div class="flex-between flex-wrap" style="margin-bottom:16px"><h3>Pedido ' + o.id + "</h3>" + NG.statusBadge(o.status) + "</div>" +
+                  '<div class="field" style="max-width:320px"><label for="st">Atualizar status</label><select id="st" class="select" data-status>' + options + "</select></div>" +
+                  '<button class="btn btn--primary btn--inline" data-save-status>Salvar status</button></div>' +
+                '<div class="card mt-8"><h3 style="margin-bottom:24px">Linha do tempo</h3><div data-timeline>' + NG.renderTimeline(o) + "</div></div>" +
+                '<div class="card mt-8"><h3 style="margin-bottom:16px">Itens</h3>' +
+                  o.items.map(function (i) { return '<div class="summary-row"><span class="muted">' + i.qty + "x " + NG.escape(i.name) + "</span><span>" + NG.money(i.price * i.qty) + "</span></div>"; }).join("") +
+                  '<div class="summary-row summary-row--total"><span>Total</span><span>' + NG.money(NG.orderService.total(o)) + "</span></div></div>" +
+              "</div>" +
+              '<aside class="card card--flat">' +
+                "<h3>Cliente</h3><div class=\"divider\"></div><p class=\"text-small\"><strong>" + NG.escape(o.customer) + "</strong></p>" +
+                '<div class="divider"></div><h3>Entrega</h3><p class="text-small mt-4">' + (o.mode === "entrega" ? "Entrega por motoboy" : "Retirada na loja") + "</p>" +
+                '<p class="text-small text-soft mt-4">' + NG.escape(o.address) + "</p>" +
+                '<p class="text-small mt-4">' + NG.icon("calendar", { size: 16 }) + " " + NG.dateBR(o.schedule.date) + " às " + o.schedule.time + "</p>" +
+                '<div class="divider"></div><h3>Pagamento</h3><p class="text-small mt-4">' + ({ pix: "PIX", credito: "Crédito", debito: "Débito" }[o.payment.method] || o.payment.method) + "</p>" +
+                '<p class="text-small mt-4">' + NG.paymentStatusBadge(o.payment.status) + "</p>" +
+              "</aside>" +
+            "</div>";
+
+          NG.adminShell("pedidos", "Detalhes do pedido", content);
+
+          NG.qs("[data-save-status]").addEventListener("click", function () {
+            var v = NG.qs("[data-status]").value;
+            NG.orderService.updateStatus(o.id, v);
+            o = NG.orderService.get(o.id);
+            NG.toast({ type: "success", message: "Status atualizado para: " + NG.orderStatus[v] });
+            build();
+          });
+        }
+      },
+    };
+  </script>
+</body>
+</html>

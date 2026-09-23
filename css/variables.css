@@ -1,0 +1,70 @@
+/* ============================================
+   NG Doce Duo — Design Tokens
+   ============================================ */
+:root {
+  /* Paleta oficial */
+  --color-cream: #f0e0d0;        /* fundo principal */
+  --color-rose-light: #f0d0d0;   /* destaques, badges, skeletons */
+  --color-rose-medium: #d0a090;  /* bordas ativas, ícones secundários */
+  --color-chocolate: #603c30;    /* botões primários, títulos, header/footer */
+  --color-chocolate-dark: #402820; /* títulos de peso, hover, overlays */
+  --color-rose-dark: #c08080;    /* acentos, badge da sacola, foco */
+  --color-sage: #807060;         /* textos secundários */
+  --color-champagne: #d0b090;    /* bordas, divisórias, desabilitados */
+
+  /* Neutros de apoio derivados da paleta */
+  --color-surface: #fffaf5;
+  --color-surface-alt: #faf1e8;
+  --color-white: #ffffff;
+  --color-text: #402820;
+  --color-text-soft: #807060;
+  --color-border: #e6d3c3;
+
+  /* Feedback (derivados, contraste >= 4.5:1) */
+  --color-success: #5a7052;
+  --color-success-bg: #e8efe2;
+  --color-danger: #a4453a;
+  --color-danger-bg: #f6e2df;
+  --color-warning: #9a6b2f;
+  --color-warning-bg: #f6e9d6;
+  --color-info-bg: #efe1d4;
+
+  /* Tipografia */
+  --font-title: "Poppins", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Inter", "Segoe UI", system-ui, sans-serif;
+
+  /* Espaçamento (escala 4/8/12/16/24/32/48/64) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* Raios */
+  --radius-field: 6px;
+  --radius-btn: 8px;
+  --radius-card: 10px;
+  --radius-pill: 999px;
+
+  /* Sombra única */
+  --shadow: 0 2px 8px rgba(96, 60, 48, 0.12);
+  --shadow-lg: 0 8px 24px rgba(96, 60, 48, 0.18);
+
+  /* Layout */
+  --container: 1200px;
+  --gutter: 24px;
+  --header-h: 76px;
+
+  /* Transições */
+  --t-fast: 150ms ease;
+  --t-med: 250ms ease;
+
+  /* Z-index */
+  --z-header: 100;
+  --z-drawer: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+}

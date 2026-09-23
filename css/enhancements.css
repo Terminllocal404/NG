@@ -1,0 +1,206 @@
+/* ============================================
+   NG Doce Duo — Camada de polimento visual
+   Aditiva e não-destrutiva: apenas refina o que já existe.
+   Importada por último em main.css.
+   ============================================ */
+
+/* Respeita quem prefere menos movimento */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Product card: zoom suave na imagem + peso do título ---------- */
+.product-card__media img {
+  transition: transform 400ms ease;
+}
+.product-card:hover .product-card__media img {
+  transform: scale(1.06);
+}
+.product-card__flag {
+  box-shadow: 0 2px 6px rgba(64, 40, 32, 0.18);
+  backdrop-filter: saturate(1.1);
+}
+.product-card__name {
+  transition: color var(--t-fast);
+}
+.product-card:hover .product-card__name {
+  color: var(--color-chocolate-dark);
+}
+
+/* ---------- Botões: elevação elegante ---------- */
+.btn--primary,
+.btn--danger {
+  box-shadow: 0 2px 6px rgba(96, 60, 48, 0.16);
+}
+.btn--primary:hover,
+.btn--danger:hover {
+  box-shadow: 0 6px 16px rgba(96, 60, 48, 0.24);
+  transform: translateY(-1px);
+}
+.btn--primary:active,
+.btn--danger:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(96, 60, 48, 0.16);
+}
+
+/* ---------- Badges: leve profundidade ---------- */
+.badge {
+  box-shadow: inset 0 0 0 1px rgba(96, 60, 48, 0.04);
+}
+
+/* ---------- Chips: transição de seleção mais fluida ---------- */
+.chip {
+  transition: background var(--t-fast), border-color var(--t-fast),
+    color var(--t-fast), transform var(--t-fast);
+}
+.chip:active {
+  transform: scale(0.97);
+}
+
+/* ---------- Cards: hover sutil onde são clicáveis ---------- */
+a.card {
+  transition: transform var(--t-fast), box-shadow var(--t-fast),
+    border-color var(--t-fast);
+}
+a.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-rose-medium);
+}
+
+/* ---------- Inputs: transição de foco mais suave ---------- */
+.input,
+.select,
+.textarea {
+  transition: border-color var(--t-fast), box-shadow var(--t-fast),
+    background var(--t-fast);
+}
+.input:hover:not(:focus),
+.select:hover:not(:focus),
+.textarea:hover:not(:focus) {
+  border-color: var(--color-rose-medium);
+}
+
+/* ---------- Option cards (entrega / pagamento): realce refinado ---------- */
+.option-card {
+  transition: border-color var(--t-fast), background var(--t-fast),
+    box-shadow var(--t-fast);
+}
+.option-card.is-selected {
+  box-shadow: 0 0 0 1px var(--color-chocolate), var(--shadow);
+}
+
+/* ---------- Hero: leve textura de luz ---------- */
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.5), transparent 70%);
+  pointer-events: none;
+}
+.hero__media img {
+  transition: transform 500ms ease;
+}
+.hero__media img:hover {
+  transform: scale(1.02);
+}
+
+/* ---------- Seções alternadas: divisória delicada ---------- */
+.section + .section {
+  position: relative;
+}
+
+/* ---------- Feature icon: leve destaque ---------- */
+.feature__icon {
+  box-shadow: inset 0 0 0 1px rgba(192, 128, 128, 0.25);
+  transition: transform var(--t-fast);
+}
+.feature:hover .feature__icon {
+  transform: translateY(-2px) rotate(-3deg);
+}
+
+/* ---------- Timeline: acabamento dos bullets ---------- */
+.timeline__bullet {
+  box-shadow: 0 1px 3px rgba(64, 40, 32, 0.12);
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+.timeline__step.is-current .timeline__bullet {
+  animation: pulse-halo 2s ease-in-out infinite;
+}
+@keyframes pulse-halo {
+  0%, 100% { box-shadow: 0 0 0 4px var(--color-rose-light); }
+  50% { box-shadow: 0 0 0 7px rgba(240, 208, 208, 0.5); }
+}
+
+/* ---------- Stepper: transição do dot ---------- */
+.stepper__dot {
+  transition: background var(--t-med), border-color var(--t-med), color var(--t-med);
+}
+
+/* ---------- Tabela admin: cabeçalho sticky + linhas suaves ---------- */
+.data-table table thead th {
+  position: sticky;
+  top: 0;
+}
+.data-table tbody tr {
+  transition: background var(--t-fast);
+}
+
+/* ---------- Stat cards: hover discreto ---------- */
+.stat-card {
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ---------- Barras do gráfico: brilho no topo ---------- */
+.bars__bar {
+  background: linear-gradient(var(--color-rose-medium), var(--color-rose-dark));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.bars__col:hover .bars__bar {
+  background: linear-gradient(var(--color-chocolate), var(--color-chocolate-dark));
+}
+
+/* ---------- Links do rodapé: sublinhado animado ---------- */
+.site-footer a {
+  transition: color var(--t-fast), padding-left var(--t-fast);
+}
+.site-footer a:hover {
+  padding-left: 3px;
+}
+
+/* ---------- Cabeçalho: transição dos itens ---------- */
+.main-nav a,
+.icon-btn {
+  transition: background var(--t-fast), color var(--t-fast);
+}
+
+/* ---------- Modal: origem de escala mais natural ---------- */
+.modal {
+  transform-origin: center;
+}
+
+/* ---------- Rolagem horizontal defensiva ---------- */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+/* ---------- Foco visível reforçado em elementos interativos ---------- */
+.btn:focus-visible,
+.chip:focus-visible,
+.icon-btn:focus-visible {
+  outline: 2px solid var(--color-rose-dark);
+  outline-offset: 2px;
+}

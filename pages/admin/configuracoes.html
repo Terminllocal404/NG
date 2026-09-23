@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Configurações — Admin NG Doce Duo</title>
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body data-no-layout>
+  <script src="../../js/include.js"></script>
+  <script src="../../js/admin.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireAdmin()) return;
+        var cfg = NG.getStoreConfig();
+
+        var content =
+          '<form class="card" data-store-form style="max-width:720px;margin-bottom:24px"><h3 style="margin-bottom:16px">Dados da loja</h3>' +
+            '<div class="field"><label for="nome">Nome da loja</label><input id="nome" class="input" value="' + NG.escape(cfg.name) + '"></div>' +
+            '<div class="form-row"><div class="field"><label for="tel">Telefone</label><input id="tel" class="input" data-mask="phone" value="' + NG.escape(cfg.phone) + '"></div>' +
+            '<div class="field"><label for="email">E-mail</label><input id="email" class="input" type="email" value="' + NG.escape(cfg.email) + '"></div></div>' +
+            '<div class="field"><label for="end">Endereço</label><input id="end" class="input" value="' + NG.escape(cfg.address.street) + '"></div>' +
+            '<div class="field"><label for="horario">Horário de atendimento</label><input id="horario" class="input" value="' + NG.escape(cfg.hours) + '"></div>' +
+            '<button class="btn btn--primary btn--inline" type="submit">Salvar dados</button>' +
+          "</form>" +
+          '<form class="card" data-ops-form style="max-width:720px;margin-bottom:24px"><h3 style="margin-bottom:16px">Entrega, retirada e agendamento</h3>' +
+            '<div class="form-row"><div class="field"><label for="taxa">Taxa de entrega (R$)</label><input id="taxa" class="input" type="number" step="0.01" value="' + cfg.deliveryFee + '"></div>' +
+            '<div class="field"><label for="gratis">Frete grátis acima de (R$)</label><input id="gratis" class="input" type="number" step="0.01" value="' + cfg.freeDeliveryAbove + '"></div></div>' +
+            '<div class="field"><label for="antec">Antecedência mínima para agendamento (horas)</label><input id="antec" class="input" type="number" value="' + cfg.scheduleMinHours + '"></div>' +
+            '<label class="toggle" style="margin:8px 0"><input type="checkbox" id="tg-entrega"' + (cfg.enableDelivery ? " checked" : "") + '><span class="toggle__track"></span> Aceitar entrega por motoboy</label><br>' +
+            '<label class="toggle" style="margin:8px 0"><input type="checkbox" id="tg-retirada"' + (cfg.enablePickup ? " checked" : "") + '><span class="toggle__track"></span> Aceitar retirada na loja</label>' +
+            '<div class="mt-6"><button class="btn btn--primary btn--inline" type="submit">Salvar regras</button></div>' +
+          "</form>" +
+          '<form class="card" data-admin-form style="max-width:720px"><h3 style="margin-bottom:16px">Perfil administrativo</h3>' +
+            '<div class="field"><label for="anome">Nome</label><input id="anome" class="input" value="' + NG.escape((NG.authService.getAdmin() || {}).name || "") + '"></div>' +
+            '<div class="field"><label for="asenha">Nova senha</label><input id="asenha" class="input" type="password" placeholder="Deixe em branco para manter"></div>' +
+            '<button class="btn btn--primary btn--inline" type="submit">Atualizar perfil</button>' +
+          "</form>";
+
+        NG.adminShell("config", "Configurações", content);
+        NG.validation.bindMasks(document);
+
+        NG.qs("[data-store-form]").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var c = Object.assign({}, cfg, { name: NG.qs("#nome").value, phone: NG.qs("#tel").value, email: NG.qs("#email").value, hours: NG.qs("#horario").value });
+          c.address = Object.assign({}, cfg.address, { street: NG.qs("#end").value });
+          NG.storage.set("ng_store_config", c);
+          NG.toast({ type: "success", message: "Dados da loja salvos." });
+        });
+        NG.qs("[data-ops-form]").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var c = Object.assign({}, NG.storage.get("ng_store_config", null) || {}, {
+            deliveryFee: parseFloat(NG.qs("#taxa").value),
+            freeDeliveryAbove: parseFloat(NG.qs("#gratis").value),
+            scheduleMinHours: parseInt(NG.qs("#antec").value, 10),
+            enableDelivery: NG.qs("#tg-entrega").checked,
+            enablePickup: NG.qs("#tg-retirada").checked,
+          });
+          NG.storage.set("ng_store_config", c);
+          NG.toast({ type: "success", message: "Regras atualizadas. O checkout já usa esses valores." });
+        });
+        NG.qs("[data-admin-form]").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var name = NG.qs("#anome").value.trim();
+          var pw = NG.qs("#asenha").value;
+          var res = NG.authService.updateAdminProfile({ name: name, password: pw || undefined });
+          if (res.ok) {
+            NG.toast({ type: "success", message: "Perfil administrativo atualizado." });
+            NG.qs("#asenha").value = "";
+          } else {
+            NG.toast({ type: "danger", message: res.error || "Não foi possível atualizar." });
+          }
+        });
+      },
+    };
+  </script>
+</body>
+</html>

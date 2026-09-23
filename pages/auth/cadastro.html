@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Criar conta — NG Doce Duo</title>
+  <meta name="description" content="Crie sua conta na NG Doce Duo." />
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+  <main id="main" class="page-main">
+    <div class="container">
+      <form class="form-card" data-form novalidate>
+        <div class="form-card__head">
+          <h1>Criar conta</h1>
+          <p>É rapidinho — e seus doces ficam a poucos cliques.</p>
+        </div>
+        <div data-alert></div>
+        <div class="field">
+          <label for="nome">Nome completo <span class="req">*</span></label>
+          <input id="nome" class="input" data-validate="required" autocomplete="name" placeholder="Seu nome" />
+        </div>
+        <div class="field">
+          <label for="email">E-mail <span class="req">*</span></label>
+          <input id="email" class="input" type="email" data-validate="required email" autocomplete="email" placeholder="voce@email.com" />
+        </div>
+        <div class="field">
+          <label for="tel">Telefone <span class="req">*</span></label>
+          <input id="tel" class="input" data-mask="phone" data-validate="required phone" autocomplete="tel" placeholder="(11) 99999-9999" />
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="senha">Senha <span class="req">*</span></label>
+            <input id="senha" class="input" type="password" data-validate="required password" autocomplete="new-password" placeholder="Mín. 6 caracteres" />
+          </div>
+          <div class="field">
+            <label for="senha2">Confirmar senha <span class="req">*</span></label>
+            <input id="senha2" class="input" type="password" data-validate="required" data-match="#senha" autocomplete="new-password" placeholder="Repita a senha" />
+          </div>
+        </div>
+        <label class="check" style="margin-bottom:16px"><input type="checkbox" id="termos" /> Aceito receber novidades e ofertas</label>
+        <button class="btn btn--primary btn--block" type="submit" data-submit>Criar conta</button>
+        <p class="text-center text-small mt-6">Já tem conta? <a class="link" href="login.html">Entrar</a></p>
+      </form>
+    </div>
+  </main>
+  <div data-layout="footer"></div>
+
+  <script src="../../js/include.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        var form = NG.qs("[data-form]");
+        NG.validation.bindForm(form);
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!NG.validation.validateForm(form)) return;
+          var btn = NG.qs("[data-submit]");
+          btn.classList.add("is-loading");
+          setTimeout(function () {
+            var res = NG.authService.register({
+              name: NG.qs("#nome").value,
+              email: NG.qs("#email").value,
+              phone: NG.qs("#tel").value,
+              password: NG.qs("#senha").value,
+            });
+            btn.classList.remove("is-loading");
+            if (!res.ok) {
+              NG.qs("[data-alert]").innerHTML = '<div class="alert alert--danger">' + NG.icon("alert", {}) + "<div>" + res.error + "</div></div>";
+              return;
+            }
+            NG.toast({ type: "success", message: "Enviamos um código para o seu e-mail." });
+            location.href = "verificar-email.html";
+          }, 700);
+        });
+      },
+    };
+  </script>
+</body>
+</html>

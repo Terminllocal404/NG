@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Detalhes do pedido — NG Doce Duo</title>
+  <meta name="description" content="Detalhes do seu pedido na NG Doce Duo." />
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+  <main id="main" class="page-main">
+    <div class="container section" data-order></div>
+  </main>
+  <div data-layout="footer"></div>
+
+  <script src="../../js/include.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        var id = NG.param("id");
+        var o = NG.orderService.get(id);
+        var root = NG.qs("[data-order]");
+        if (!o) {
+          root.innerHTML = NG.emptyState({ icon: "box", title: "Pedido não encontrado", message: "Não localizamos este pedido.", actionHtml: '<a class="btn btn--primary btn--inline" href="../customer/pedidos.html">Meus pedidos</a>' });
+          return;
+        }
+        var sub = NG.orderService.subtotal(o);
+        root.innerHTML =
+          '<nav class="breadcrumb"><a href="../../index.html">Home</a><span class="sep">›</span><a href="../customer/pedidos.html">Meus pedidos</a><span class="sep">›</span><span aria-current="page">' + o.id + "</span></nav>" +
+          '<div class="flex-between flex-wrap" style="margin-bottom:24px"><div><h1>Pedido ' + o.id + "</h1>" +
+          '<p class="text-soft">Feito em ' + NG.dateTimeBR(o.date) + "</p></div>" + NG.statusBadge(o.status) + "</div>" +
+          '<div class="split--checkout">' +
+            "<div>" +
+              '<div class="card"><h3 style="margin-bottom:24px">Acompanhamento</h3>' + NG.renderTimeline(o) + "</div>" +
+              '<div class="card mt-8"><h3 style="margin-bottom:16px">Itens</h3>' +
+                o.items.map(function (i) { return '<div class="summary-row"><span class="muted">' + i.qty + "x " + NG.escape(i.name) + "</span><span>" + NG.money(i.price * i.qty) + "</span></div>"; }).join("") +
+                '<div class="divider"></div>' +
+                '<div class="summary-row"><span class="muted">Subtotal</span><span>' + NG.money(sub) + "</span></div>" +
+                (o.discount ? '<div class="summary-row"><span class="muted">Desconto</span><span class="discount">- ' + NG.money(o.discount) + "</span></div>" : "") +
+                '<div class="summary-row"><span class="muted">Entrega</span><span>' + (o.deliveryFee ? NG.money(o.deliveryFee) : "Grátis") + "</span></div>" +
+                '<div class="summary-row summary-row--total"><span>Total</span><span>' + NG.money(NG.orderService.total(o)) + "</span></div></div>" +
+            "</div>" +
+            '<aside class="card card--flat">' +
+              "<h3>Entrega</h3><div class=\"divider\"></div>" +
+              '<p class="text-small"><strong>' + (o.mode === "entrega" ? "Entrega por motoboy" : "Retirada na loja") + "</strong></p>" +
+              '<p class="text-small text-soft mt-4">' + NG.escape(o.address) + "</p>" +
+              '<p class="text-small mt-4">' + NG.icon("calendar", { size: 16 }) + " " + NG.dateBR(o.schedule.date) + " às " + o.schedule.time + "</p>" +
+              (o.schedule.obs ? '<p class="text-small text-soft mt-4">Obs.: ' + NG.escape(o.schedule.obs) + "</p>" : "") +
+              '<div class="divider"></div><h3>Pagamento</h3>' +
+              '<p class="text-small mt-4">' + ({ pix: "PIX", credito: "Cartão de crédito", debito: "Cartão de débito" }[o.payment.method] || o.payment.method) + "</p>" +
+              '<p class="text-small mt-4">Status: ' + NG.paymentStatusBadge(o.payment.status) + "</p>" +
+              '<a class="btn btn--primary btn--block mt-6" href="acompanhar.html?id=' + o.id + '">Acompanhar pedido</a>' +
+            "</aside>" +
+          "</div>";
+      },
+    };
+  </script>
+</body>
+</html>

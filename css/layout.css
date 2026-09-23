@@ -1,0 +1,133 @@
+/* ============================================
+   NG Doce Duo — Layout
+   ============================================ */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding-inline: 24px;
+  }
+}
+
+.section {
+  padding-block: var(--sp-16);
+}
+.section--tight {
+  padding-block: var(--sp-8);
+}
+
+.page-main {
+  min-height: 60vh;
+}
+
+/* Stack helpers */
+.stack > * + * {
+  margin-top: var(--sp-4);
+}
+.stack-lg > * + * {
+  margin-top: var(--sp-8);
+}
+
+/* Grids */
+.grid {
+  display: grid;
+  gap: var(--gutter);
+}
+.grid-products {
+  grid-template-columns: repeat(4, 1fr);
+}
+.grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 1024px) {
+  .grid-products {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .grid-products,
+  .grid-3,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Split para páginas de conteúdo + sidebar */
+.split {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--sp-8);
+  align-items: start;
+}
+.split--checkout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--sp-8);
+  align-items: start;
+}
+@media (max-width: 1024px) {
+  .split,
+  .split--checkout {
+    grid-template-columns: 1fr;
+  }
+}
+/* Dashboard: gráfico mais largo que o resumo apenas no desktop;
+   abaixo de 1024px herda o colapso de .split para 1 coluna */
+@media (min-width: 1025px) {
+  .split--dash {
+    grid-template-columns: 1.4fr 1fr;
+  }
+}
+
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-8);
+  flex-wrap: wrap;
+}
+.section-head p {
+  color: var(--color-text-soft);
+  max-width: 52ch;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border);
+  border: 0;
+  margin-block: var(--sp-6);
+}
+
+.flex {
+  display: flex;
+  gap: var(--sp-4);
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+}
+.flex-wrap {
+  flex-wrap: wrap;
+}
+.items-center {
+  align-items: center;
+}
+.mt-4 { margin-top: var(--sp-4); }
+.mt-6 { margin-top: var(--sp-6); }
+.mt-8 { margin-top: var(--sp-8); }
+.text-center { text-align: center; }

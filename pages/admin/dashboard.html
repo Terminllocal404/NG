@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Dashboard — Admin NG Doce Duo</title>
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body data-no-layout>
+  <script src="../../js/include.js"></script>
+  <script src="../../js/admin.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireAdmin()) return;
+        var m = NG.adminMetrics();
+        var orders = NG.orderService.all().slice(0, 5);
+
+        // gráfico simples de vendas (7 dias fictícios derivados)
+        var week = [820, 640, 910, 1200, 980, 1450, 1100];
+        var maxV = Math.max.apply(null, week);
+        var days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+        var bars = week.map(function (v, i) {
+          return '<div class="bars__col"><div class="bars__bar" style="height:' + (v / maxV * 100) + '%" title="' + NG.money(v) + '"></div><span class="bars__label">' + days[i] + "</span></div>";
+        }).join("");
+
+        var content =
+          '<div class="stat-grid">' +
+            statCard("Pedidos", m.orders, "up", "+12% na semana") +
+            statCard("Faturamento", NG.money(m.revenue), "up", "+8% na semana") +
+            statCard("Em andamento", m.pending, "", "aguardando preparo/entrega") +
+            statCard("Clientes", m.customers, "up", "+2 novos") +
+          "</div>" +
+          '<div class="split split--dash" style="margin-top:32px">' +
+            '<div class="card"><h3 style="margin-bottom:8px">Vendas nos últimos 7 dias</h3><div class="bars">' + bars + "</div></div>" +
+            '<div class="card"><h3 style="margin-bottom:16px">Resumo operacional</h3>' +
+              opRow("Pedidos concluídos", m.done) +
+              opRow("Produtos ativos", m.products) +
+              opRow("Ticket médio", NG.money(m.revenue / Math.max(1, m.orders))) +
+            "</div>" +
+          "</div>" +
+          '<div class="card" style="margin-top:32px"><div class="flex-between" style="margin-bottom:16px"><h3>Pedidos recentes</h3><a class="btn btn--secondary btn--sm btn--inline" href="pedidos.html">Ver todos</a></div>' +
+          '<div class="data-table"><table><thead><tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Total</th><th>Status</th></tr></thead><tbody>' +
+          orders.map(function (o) {
+            return '<tr onclick="location.href=\'detalhe.html?id=' + o.id + "'\" style=\"cursor:pointer\"><td><strong>" + o.id + "</strong></td><td>" + NG.escape(o.customer) + "</td><td>" + NG.dateBR(o.date) + "</td><td>" + NG.money(NG.orderService.total(o)) + "</td><td>" + NG.statusBadge(o.status) + "</td></tr>";
+          }).join("") +
+          "</tbody></table></div></div>";
+
+        NG.adminShell("dashboard", "Dashboard", content);
+
+        function statCard(label, value, trend, note) {
+          return '<div class="stat-card"><div class="stat-card__label">' + label + '</div><div class="stat-card__value">' + value + '</div><div class="stat-card__trend ' + trend + '">' + note + "</div></div>";
+        }
+        function opRow(label, value) {
+          return '<div class="summary-row"><span class="muted">' + label + "</span><strong>" + value + "</strong></div>";
+        }
+      },
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meus pedidos — NG Doce Duo</title>
+  <meta name="description" content="Acompanhe seus pedidos na NG Doce Duo." />
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+  <main id="main" class="page-main">
+    <div class="container section">
+      <nav class="breadcrumb"><a href="../../index.html">Home</a><span class="sep">›</span><a href="perfil.html">Minha conta</a><span class="sep">›</span><span aria-current="page">Pedidos</span></nav>
+      <h1 style="margin-bottom:24px">Meus pedidos</h1>
+      <div class="split">
+        <aside class="card card--flat" data-account-nav></aside>
+        <section>
+          <div class="flex flex-wrap" data-filters style="gap:8px;margin-bottom:24px"></div>
+          <div class="stack" data-list style="gap:16px"></div>
+        </section>
+      </div>
+    </div>
+  </main>
+  <div data-layout="footer"></div>
+
+  <script src="../../js/include.js"></script>
+  <script src="../../js/customer.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireCustomer()) return;
+        NG.qs("[data-account-nav]").innerHTML = NG.accountNav("pedidos");
+        var user = NG.authService.getCustomer();
+        var filter = "todos";
+
+        var filters = [
+          { key: "todos", label: "Todos" },
+          { key: "andamento", label: "Em andamento" },
+          { key: "concluido", label: "Concluídos" },
+          { key: "cancelado", label: "Cancelados" },
+        ];
+        NG.qs("[data-filters]").innerHTML = filters.map(function (f) {
+          return '<button class="chip ' + (f.key === "todos" ? "is-active" : "") + '" data-filter="' + f.key + '">' + f.label + "</button>";
+        }).join("");
+        NG.qsa("[data-filter]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            NG.qsa("[data-filter]").forEach(function (x) { x.classList.remove("is-active"); });
+            b.classList.add("is-active"); filter = b.dataset.filter; render();
+          });
+        });
+
+        function render() {
+          var orders = NG.orderService.byCustomer(user.id);
+          if (filter === "andamento") orders = orders.filter(function (o) { return ["pedido_recebido", "pagamento_confirmado", "em_preparacao", "pedido_pronto", "saiu_para_entrega", "aguardando_retirada"].includes(o.status); });
+          else if (filter === "concluido") orders = orders.filter(function (o) { return ["entregue", "retirado"].includes(o.status); });
+          else if (filter === "cancelado") orders = orders.filter(function (o) { return o.status === "cancelado"; });
+
+          var list = NG.qs("[data-list]");
+          if (!orders.length) {
+            list.innerHTML = NG.emptyState({
+              icon: "box",
+              title: "Nenhum pedido por aqui",
+              message: filter === "todos" ? "Você ainda não fez pedidos. Que tal começar agora?" : "Nenhum pedido nesta categoria.",
+              actionHtml: '<a class="btn btn--primary btn--inline" href="../catalogo.html">Ver catálogo</a>',
+            });
+            return;
+          }
+          list.innerHTML = orders.map(function (o) { return NG.orderCard(o, "../orders/detalhe.html"); }).join("");
+        }
+        render();
+      },
+    };
+  </script>
+</body>
+</html>

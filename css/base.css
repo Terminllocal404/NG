@@ -1,0 +1,114 @@
+/* ============================================
+   NG Doce Duo — Base / Tipografia
+   ============================================ */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap");
+
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-cream);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-title);
+  color: var(--color-chocolate);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+}
+
+p {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+small,
+.text-small {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.text-caption {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.text-soft {
+  color: var(--color-text-soft);
+}
+
+strong {
+  font-weight: 600;
+}
+
+a.link {
+  color: var(--color-chocolate);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+a.link:hover {
+  color: var(--color-chocolate-dark);
+}
+
+@media (max-width: 640px) {
+  h1 {
+    font-size: 30px;
+    line-height: 38px;
+  }
+  h2 {
+    font-size: 24px;
+    line-height: 32px;
+  }
+}
+
+/* Utilidades de acessibilidade */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: var(--z-toast);
+  background: var(--color-chocolate);
+  color: var(--color-white);
+  padding: var(--sp-3) var(--sp-6);
+  border-radius: 0 0 var(--radius-btn) 0;
+}
+.skip-link:focus {
+  left: 0;
+}

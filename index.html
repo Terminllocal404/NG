@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NG Doce Duo — Doces artesanais feitos com amor</title>
+  <meta name="description" content="Bolos de pote, copos da felicidade, brigadeiros e bolos artesanais feitos com amor. Entrega e retirada em São Paulo. Sabor que aproxima." />
+  <link rel="icon" href="assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+
+  <main id="main" class="page-main">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container hero__grid">
+        <div>
+          <span class="hero__eyebrow">Doces artesanais · Feito com amor</span>
+          <h1>Cada doce é um abraço em forma de sabor</h1>
+          <p>Bolos de pote, copos da felicidade, brigadeiros gourmet e bolos para celebrar. Feitos à mão, com ingredientes de verdade e muito carinho.</p>
+          <div class="hero__actions">
+            <a href="pages/catalogo.html" class="btn btn--primary btn--lg btn--inline">Ver catálogo</a>
+            <a href="pages/catalogo.html?cat=bolos-de-pote" class="btn btn--secondary btn--lg btn--inline">Bolos de pote</a>
+          </div>
+        </div>
+        <div class="hero__media">
+          <img src="assets/products/copo-felicidade-oreo.jpg" alt="Copo da felicidade de Oreo da NG Doce Duo" width="520" height="390" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Diferenciais -->
+    <section class="section--tight section">
+      <div class="container grid grid-3">
+        <div class="feature">
+          <span class="feature__icon" data-ic="heart"></span>
+          <div><h3>Feito com amor</h3><p>Receitas artesanais, preparadas com ingredientes selecionados e muito capricho.</p></div>
+        </div>
+        <div class="feature">
+          <span class="feature__icon" data-ic="truck"></span>
+          <div><h3>Entrega & retirada</h3><p>Receba em casa por motoboy ou retire na loja no horário que preferir.</p></div>
+        </div>
+        <div class="feature">
+          <span class="feature__icon" data-ic="calendar"></span>
+          <div><h3>Agende seu pedido</h3><p>Escolha a data e o horário. Bolos sob encomenda com 48h de antecedência.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Categorias -->
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Nossas categorias</h2>
+            <p>Explore os queridinhos da NG Doce Duo.</p>
+          </div>
+          <a href="pages/catalogo.html" class="btn btn--ghost btn--inline">Ver tudo</a>
+        </div>
+        <div class="grid grid-2" data-categories></div>
+      </div>
+    </section>
+
+    <!-- Destaques -->
+    <section class="section" style="background:var(--color-surface-alt)">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Destaques da semana</h2>
+            <p>Os doces que todo mundo está pedindo.</p>
+          </div>
+          <a href="pages/catalogo.html" class="btn btn--ghost btn--inline">Ver catálogo</a>
+        </div>
+        <div class="grid grid-products" data-featured></div>
+      </div>
+    </section>
+
+    <!-- Entrega e retirada -->
+    <section class="section">
+      <div class="container grid grid-2">
+        <div class="card">
+          <span class="feature__icon" data-ic="truck" style="margin-bottom:16px"></span>
+          <h3>Entrega por motoboy</h3>
+          <p class="text-soft mt-4">Levamos seus doces até você com todo o cuidado. Taxa a partir de R$ 8,90 e frete grátis acima de R$ 90,00.</p>
+        </div>
+        <div class="card">
+          <span class="feature__icon" data-ic="store" style="margin-bottom:16px"></span>
+          <h3>Retirada na loja</h3>
+          <p class="text-soft mt-4">Prefere retirar? Escolha data e horário no checkout e retire fresquinho no nosso balcão.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section" style="background:linear-gradient(135deg,var(--color-rose-light),var(--color-cream))">
+      <div class="container text-center">
+        <h2>Vai ter festa? A gente adoça.</h2>
+        <p class="text-soft mt-4" style="max-width:52ch;margin-inline:auto">Encomende bolos inteiros e caixas de brigadeiros para aniversários, casamentos e todos os momentos especiais.</p>
+        <div class="mt-6"><a href="pages/catalogo.html?cat=bolos-inteiros" class="btn btn--primary btn--lg btn--inline">Encomendar agora</a></div>
+      </div>
+    </section>
+  </main>
+
+  <div data-layout="footer"></div>
+
+  <script src="js/include.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "home",
+      init: function () {
+        // ícones dos features
+        NG.qsa("[data-ic]").forEach(function (el) {
+          el.innerHTML = NG.icon(el.dataset.ic, { size: 24 });
+        });
+        // categorias
+        var catWrap = NG.qs("[data-categories]");
+        catWrap.innerHTML = NG.categories
+          .map(function (c) {
+            return (
+              '<a class="cat-tile" href="pages/catalogo.html?cat=' + c.slug + '">' +
+              '<img src="' + c.image + '" alt="' + c.name + '">' +
+              '<span class="cat-tile__label">' + c.name + "</span></a>"
+            );
+          })
+          .join("");
+        // destaques
+        var wrap = NG.qs("[data-featured]");
+        wrap.innerHTML = NG.skeletonCards(4);
+        NG.productService.featured().then(function (items) {
+          wrap.innerHTML = items.slice(0, 4).map(NG.featuredCard).join("");
+        });
+      },
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Produtos — Admin NG Doce Duo</title>
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body data-no-layout>
+  <script src="../../js/include.js"></script>
+  <script src="../../js/admin.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireAdmin()) return;
+        var state = { q: "", cat: "" };
+
+        var catOpts = '<option value="">Todas as categorias</option>' + NG.categories.map(function (c) { return '<option value="' + c.slug + '">' + c.name + "</option>"; }).join("");
+
+        NG.adminShell("produtos", "Produtos",
+          '<div class="card" style="margin-bottom:24px"><div class="flex flex-wrap items-center" style="gap:12px">' +
+          '<div class="input-group" style="flex:1;min-width:200px"><input class="input" placeholder="Buscar produto" data-q><span class="input-group__addon" data-ic></span></div>' +
+          '<select class="select" data-cat style="max-width:220px">' + catOpts + "</select>" +
+          '<a class="btn btn--primary btn--inline" href="produto-form.html" data-new></a>' +
+          "</div></div><div data-wrap></div>");
+
+        NG.qs("[data-ic]").innerHTML = NG.icon("search", { size: 20 });
+        NG.qs("[data-new]").innerHTML = NG.icon("plus", { size: 18 }) + " Novo produto";
+        NG.qs("[data-q]").addEventListener("input", function (e) { state.q = e.target.value; render(); });
+        NG.qs("[data-cat]").addEventListener("change", function (e) { state.cat = e.target.value; render(); });
+
+        function render() {
+          NG.productService.list({ search: state.q, category: state.cat }).then(function (items) {
+            items = items.filter(function (p) { return !p.__removed; });
+            var wrap = NG.qs("[data-wrap]");
+            if (!items.length) {
+              wrap.innerHTML = '<div class="card">' + NG.emptyState({ icon: "tag", title: "Nenhum produto", message: "Ajuste a busca ou cadastre um novo produto.", actionHtml: '<a class="btn btn--primary btn--inline" href="produto-form.html">Novo produto</a>' }) + "</div>";
+              return;
+            }
+            wrap.innerHTML = '<div class="data-table"><table><thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Status</th><th></th></tr></thead><tbody>' +
+              items.map(function (p) {
+                var av = NG.availability(p);
+                return "<tr><td><div class=\"flex items-center\" style=\"gap:8px\"><img src=\"" + NG.url(p.image) + "\" alt=\"\" width=\"40\" height=\"40\" style=\"border-radius:6px;object-fit:cover\"><strong>" + NG.escape(p.name) + "</strong></div></td>" +
+                  "<td>" + NG.categoryName(p.category) + "</td><td>" + NG.money(p.price) + "</td><td>" + p.stock + "</td>" +
+                  "<td>" + (p.active ? '<span class="badge badge--success">Ativo</span>' : '<span class="badge badge--neutral">Inativo</span>') + "</td>" +
+                  '<td><div class="flex" style="gap:4px">' +
+                    '<a class="btn btn--ghost btn--sm btn--inline" href="produto-form.html?id=' + p.id + '" aria-label="Editar">' + NG.icon("edit", { size: 16 }) + "</a>" +
+                    '<button class="btn btn--ghost btn--sm btn--inline" data-toggle="' + p.id + '" data-active="' + p.active + '">' + (p.active ? "Desativar" : "Ativar") + "</button>" +
+                    '<button class="btn btn--ghost btn--sm btn--inline" data-del="' + p.id + '" style="color:var(--color-danger)" aria-label="Excluir">' + NG.icon("trash", { size: 16 }) + "</button>" +
+                  "</div></td></tr>";
+              }).join("") + "</tbody></table></div>";
+
+            NG.qsa("[data-toggle]").forEach(function (b) {
+              b.addEventListener("click", function () {
+                NG.productService.toggleActive(b.dataset.toggle, b.dataset.active !== "true");
+                NG.toast({ type: "success", message: "Produto atualizado." });
+                render();
+              });
+            });
+            NG.qsa("[data-del]").forEach(function (b) {
+              b.addEventListener("click", function () {
+                NG.confirm({ title: "Excluir produto", message: "Deseja excluir este produto do cardápio?", confirmLabel: "Excluir", danger: true }).then(function (ok) {
+                  if (ok) { NG.productService.remove(b.dataset.del); NG.toast({ message: "Produto removido." }); render(); }
+                });
+              });
+            });
+          });
+        }
+        render();
+      },
+    };
+  </script>
+</body>
+</html>

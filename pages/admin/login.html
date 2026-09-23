@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Admin — NG Doce Duo</title>
+  <meta name="description" content="Área administrativa da NG Doce Duo." />
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body data-no-layout style="background:var(--color-chocolate-dark);min-height:100vh;display:grid;place-items:center;padding:24px">
+  <div style="width:100%;max-width:420px">
+    <div class="text-center" style="margin-bottom:24px">
+      <img src="../../assets/logo/ng-doce-duo-logo.png" alt="NG Doce Duo" width="80" height="80" style="border-radius:50%;background:var(--color-cream);margin:0 auto 12px" />
+      <h1 style="color:var(--color-cream)">Área administrativa</h1>
+    </div>
+    <form class="form-card" data-form novalidate style="margin:0">
+      <div data-alert></div>
+      <div class="field"><label for="email">E-mail <span class="req">*</span></label><input id="email" class="input" type="email" data-validate="required email" placeholder="admin@ngduodoce.com.br"></div>
+      <div class="field"><label for="senha">Senha <span class="req">*</span></label><input id="senha" class="input" type="password" data-validate="required" placeholder="Sua senha"></div>
+      <button class="btn btn--primary btn--block" type="submit" data-submit>Entrar</button>
+      <div class="alert alert--info mt-6" data-hint></div>
+      <p class="text-center text-small mt-6">Ainda não possui acesso administrativo? <a class="link" href="cadastro.html">Criar conta</a></p>
+      <p class="text-center text-small mt-4"><a class="link" href="../../index.html">Voltar à loja</a></p>
+    </form>
+  </div>
+
+  <script src="../../js/include.js"></script>
+  <script src="../../js/admin.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (NG.authService.isAdmin()) { location.href = "dashboard.html"; return; }
+        var form = NG.qs("[data-form]");
+        NG.qs("[data-hint]").innerHTML = NG.icon("info", {}) + "<div>Demo: <strong>admin@ngduodoce.com.br</strong> / <strong>admin123</strong></div>";
+        NG.validation.bindForm(form);
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!NG.validation.validateForm(form)) return;
+          var btn = NG.qs("[data-submit]"); btn.classList.add("is-loading");
+          setTimeout(function () {
+            btn.classList.remove("is-loading");
+            var res = NG.authService.adminLogin(NG.qs("#email").value, NG.qs("#senha").value);
+            if (!res.ok) {
+              if (res.needVerify) { location.href = "cadastro.html?verify=1"; return; }
+              NG.qs("[data-alert]").innerHTML = '<div class="alert alert--danger">' + NG.icon("alert", {}) + "<div>" + res.error + "</div></div>"; return;
+            }
+            location.href = "dashboard.html";
+          }, 500);
+        });
+      },
+    };
+  </script>
+</body>
+</html>

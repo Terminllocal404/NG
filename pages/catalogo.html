@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catálogo — NG Doce Duo</title>
+  <meta name="description" content="Explore o catálogo completo da NG Doce Duo: bolos de pote, copos da felicidade, brigadeiros e bolos inteiros. Filtre por categoria, sabor e preço." />
+  <link rel="icon" href="../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../css/main.css" />
+</head>
+<body>
+  <div data-layout="header"></div>
+
+  <main id="main" class="page-main">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Você está em">
+        <a href="../index.html">Home</a>
+        <span class="sep" aria-hidden="true">›</span>
+        <span aria-current="page" data-crumb>Catálogo</span>
+      </nav>
+
+      <div class="section-head">
+        <div>
+          <h1 data-title>Catálogo</h1>
+          <p data-count-label>Carregando produtos...</p>
+        </div>
+        <div class="field" style="margin:0;min-width:220px">
+          <label for="sort" class="visually-hidden">Ordenar por</label>
+          <select id="sort" class="select" data-sort>
+            <option value="relevance">Ordenar: Relevância</option>
+            <option value="price-asc">Menor preço</option>
+            <option value="price-desc">Maior preço</option>
+            <option value="name">Nome (A-Z)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="split">
+        <!-- Filtros -->
+        <aside class="catalog-filters card card--flat" aria-label="Filtros" style="position:sticky;top:calc(var(--header-h) + 16px)">
+          <div class="flex-between" style="margin-bottom:16px">
+            <h3>Filtros</h3>
+            <button class="btn btn--ghost btn--sm btn--inline" type="button" data-clear>Limpar</button>
+          </div>
+
+          <fieldset style="border:0;margin-bottom:24px">
+            <legend class="text-caption text-soft" style="margin-bottom:8px">CATEGORIA</legend>
+            <div class="stack" data-cat-filters style="gap:8px"></div>
+          </fieldset>
+
+          <fieldset style="border:0;margin-bottom:24px">
+            <legend class="text-caption text-soft" style="margin-bottom:8px">SABOR</legend>
+            <div class="stack" data-flavor-filters style="gap:8px"></div>
+          </fieldset>
+
+          <fieldset style="border:0">
+            <legend class="text-caption text-soft" style="margin-bottom:8px">PREÇO MÁXIMO</legend>
+            <input type="range" min="15" max="130" step="5" value="130" data-price style="width:100%;accent-color:var(--color-chocolate)" />
+            <div class="text-small text-soft mt-4">Até <strong data-price-label>R$ 130,00</strong></div>
+          </fieldset>
+        </aside>
+
+        <!-- Resultados -->
+        <section>
+          <div class="flex flex-wrap" data-chips style="margin-bottom:16px"></div>
+          <div class="grid grid-products" data-results aria-live="polite"></div>
+          <div data-pagination></div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <div data-layout="footer"></div>
+
+  <script src="../js/include.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "catalogo",
+      init: function () {
+        var state = {
+          category: NG.param("cat") || "",
+          flavor: NG.param("flavor") || "",
+          search: NG.param("q") || "",
+          maxPrice: parseInt(NG.param("price"), 10) || 130,
+          sort: NG.param("sort") || "relevance",
+          page: 1,
+          perPage: 8,
+        };
+
+        // Reflete o estado (vindo da URL) na barra de endereço, sem parâmetros vazios
+        function writeURL() {
+          var p = new URLSearchParams();
+          if (state.category) p.set("cat", state.category);
+          if (state.search) p.set("q", state.search);
+          if (state.flavor) p.set("flavor", state.flavor);
+          if (state.maxPrice && state.maxPrice < 130) p.set("price", state.maxPrice);
+          if (state.sort && state.sort !== "relevance") p.set("sort", state.sort);
+          var qs = p.toString();
+          history.replaceState(null, "", qs ? location.pathname + "?" + qs : location.pathname);
+        }
+
+        var resultsEl = NG.qs("[data-results]");
+        var countLabel = NG.qs("[data-count-label]");
+        var titleEl = NG.qs("[data-title]");
+        var crumb = NG.qs("[data-crumb]");
+
+        // Monta filtros de categoria
+        NG.qs("[data-cat-filters]").innerHTML =
+          '<label class="check"><input type="radio" name="cat" value=""' + (!state.category ? " checked" : "") + "> Todas</label>" +
+          NG.categories
+            .map(function (c) {
+              return '<label class="check"><input type="radio" name="cat" value="' + c.slug + '"' + (state.category === c.slug ? " checked" : "") + "> " + c.name + "</label>";
+            })
+            .join("");
+
+        NG.qs("[data-flavor-filters]").innerHTML =
+          '<label class="check"><input type="radio" name="flavor" value="" checked> Todos</label>' +
+          NG.flavors
+            .map(function (f) {
+              return '<label class="check"><input type="radio" name="flavor" value="' + f.value + '"> ' + f.label + "</label>";
+            })
+            .join("");
+
+        // Reflete nos controles o estado restaurado da URL (sabor/preço/ordenação)
+        (function applyStateToControls() {
+          var fr = NG.qs('[data-flavor-filters] input[value="' + state.flavor + '"]');
+          if (fr) fr.checked = true;
+          var pr = NG.qs("[data-price]");
+          if (pr) { pr.value = state.maxPrice; NG.qs("[data-price-label]").textContent = NG.money(state.maxPrice); }
+          var so = NG.qs("[data-sort]");
+          if (so) so.value = state.sort;
+        })();
+
+        function renderChips() {
+          var chips = [];
+          if (state.search) chips.push({ k: "search", label: 'Busca: "' + state.search + '"' });
+          if (state.category) chips.push({ k: "category", label: NG.categoryName(state.category) });
+          if (state.flavor) {
+            var fl = NG.flavors.find(function (x) { return x.value === state.flavor; });
+            chips.push({ k: "flavor", label: fl ? fl.label : state.flavor });
+          }
+          if (state.maxPrice < 130) chips.push({ k: "maxPrice", label: "Até " + NG.money(state.maxPrice) });
+          NG.qs("[data-chips]").innerHTML = chips
+            .map(function (c) {
+              return '<span class="chip is-active chip--removable" data-chip="' + c.k + '">' + NG.escape(c.label) + " " + NG.icon("close", { size: 14 }) + "</span>";
+            })
+            .join("");
+        }
+
+        function updateHeader() {
+          if (state.category) {
+            titleEl.textContent = NG.categoryName(state.category);
+            crumb.textContent = NG.categoryName(state.category);
+          } else if (state.search) {
+            titleEl.textContent = "Resultados da busca";
+            crumb.textContent = "Busca";
+          } else {
+            titleEl.textContent = "Catálogo";
+            crumb.textContent = "Catálogo";
+          }
+        }
+
+        function load() {
+          resultsEl.innerHTML = NG.skeletonCards(state.perPage);
+          NG.qs("[data-pagination]").innerHTML = "";
+          NG.productService
+            .list({
+              publicOnly: true,
+              category: state.category,
+              flavor: state.flavor,
+              search: state.search,
+              maxPrice: state.maxPrice,
+              sort: state.sort,
+            })
+            .then(function (items) {
+              countLabel.textContent = items.length + (items.length === 1 ? " produto encontrado" : " produtos encontrados");
+              if (!items.length) {
+                resultsEl.innerHTML =
+                  '<div style="grid-column:1/-1">' +
+                  NG.emptyState({
+                    icon: "search",
+                    title: "Nenhum doce encontrado",
+                    message: "Tente remover alguns filtros ou buscar por outro termo.",
+                    actionHtml: '<button class="btn btn--primary btn--inline" data-clear>Limpar filtros</button>',
+                  }) +
+                  "</div>";
+                return;
+              }
+              // paginação
+              var totalPages = Math.ceil(items.length / state.perPage);
+              if (state.page > totalPages) state.page = 1;
+              var start = (state.page - 1) * state.perPage;
+              var pageItems = items.slice(start, start + state.perPage);
+              resultsEl.innerHTML = pageItems.map(NG.productCard).join("");
+              renderPagination(totalPages);
+            })
+            .catch(function () {
+              resultsEl.innerHTML = '<div style="grid-column:1/-1">' + NG.errorState({}) + "</div>";
+            });
+        }
+
+        function renderPagination(total) {
+          if (total <= 1) { NG.qs("[data-pagination]").innerHTML = ""; return; }
+          var html = '<div class="pagination">';
+          html += '<button ' + (state.page === 1 ? "disabled" : "") + ' data-pg="prev" aria-label="Anterior">' + NG.icon("chevronLeft", { size: 18 }) + "</button>";
+          for (var i = 1; i <= total; i++) {
+            html += '<button class="' + (i === state.page ? "is-active" : "") + '" data-pg="' + i + '">' + i + "</button>";
+          }
+          html += '<button ' + (state.page === total ? "disabled" : "") + ' data-pg="next" aria-label="Próxima">' + NG.icon("chevronRight", { size: 18 }) + "</button>";
+          html += "</div>";
+          NG.qs("[data-pagination]").innerHTML = html;
+        }
+
+        // Eventos de filtro
+        NG.qs("[data-cat-filters]").addEventListener("change", function (e) {
+          state.category = e.target.value; state.page = 1; sync();
+        });
+        NG.qs("[data-flavor-filters]").addEventListener("change", function (e) {
+          state.flavor = e.target.value; state.page = 1; sync();
+        });
+        NG.qs("[data-price]").addEventListener("input", function (e) {
+          state.maxPrice = +e.target.value;
+          NG.qs("[data-price-label]").textContent = NG.money(state.maxPrice);
+        });
+        NG.qs("[data-price]").addEventListener("change", function () { state.page = 1; sync(); });
+        NG.qs("[data-sort]").addEventListener("change", function (e) {
+          state.sort = e.target.value; sync();
+        });
+
+        document.addEventListener("click", function (e) {
+          if (e.target.closest("[data-clear]")) {
+            state.category = ""; state.flavor = ""; state.search = ""; state.maxPrice = 130; state.page = 1;
+            NG.qs('[data-cat-filters] input[value=""]').checked = true;
+            NG.qs('[data-flavor-filters] input[value=""]').checked = true;
+            NG.qs("[data-price]").value = 130;
+            NG.qs("[data-price-label]").textContent = NG.money(130);
+            sync();
+          }
+          var chip = e.target.closest("[data-chip]");
+          if (chip) {
+            var k = chip.dataset.chip;
+            if (k === "maxPrice") { state.maxPrice = 130; NG.qs("[data-price]").value = 130; NG.qs("[data-price-label]").textContent = NG.money(130); }
+            else if (k === "category") { state.category = ""; NG.qs('[data-cat-filters] input[value=""]').checked = true; }
+            else if (k === "flavor") { state.flavor = ""; NG.qs('[data-flavor-filters] input[value=""]').checked = true; }
+            else state[k] = "";
+            state.page = 1; sync();
+          }
+          var pg = e.target.closest("[data-pg]");
+          if (pg) {
+            var v = pg.dataset.pg;
+            if (v === "prev") state.page = Math.max(1, state.page - 1);
+            else if (v === "next") state.page = state.page + 1;
+            else state.page = +v;
+            load(); window.scrollTo({ top: 200, behavior: "smooth" });
+          }
+        });
+
+        function sync() {
+          writeURL();
+          updateHeader();
+          renderChips();
+          load();
+        }
+
+        sync();
+      },
+    };
+  </script>
+</body>
+</html>

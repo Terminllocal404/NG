@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Produto — Admin NG Doce Duo</title>
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body data-no-layout>
+  <script src="../../js/include.js"></script>
+  <script src="../../js/admin.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireAdmin()) return;
+        var id = NG.param("id");
+        NG.productService.get(id).then(function (p) {
+          build(p);
+        });
+
+        function build(p) {
+          var editing = !!p;
+          var catOpts = NG.categories.map(function (c) { return '<option value="' + c.slug + '"' + (p && p.category === c.slug ? " selected" : "") + ">" + c.name + "</option>"; }).join("");
+          var flavOpts = NG.flavors.map(function (f) { return '<option value="' + f.value + '"' + (p && p.flavor === f.value ? " selected" : "") + ">" + f.label + "</option>"; }).join("");
+
+          var content =
+            '<a class="btn btn--ghost btn--sm btn--inline" href="produtos.html" style="margin-bottom:16px">' + NG.icon("arrowLeft", { size: 16 }) + " Voltar</a>" +
+            '<form class="card" data-form novalidate style="max-width:720px">' +
+              '<div class="field"><label for="nome">Nome do produto <span class="req">*</span></label><input id="nome" class="input" data-validate="required" value="' + (p ? NG.escape(p.name) : "") + '"></div>' +
+              '<div class="field"><label for="desc">Descrição <span class="req">*</span></label><textarea id="desc" class="textarea" data-validate="required">' + (p ? NG.escape(p.description) : "") + "</textarea></div>" +
+              '<div class="form-row"><div class="field"><label for="cat">Categoria</label><select id="cat" class="select">' + catOpts + "</select></div>" +
+              '<div class="field"><label for="flav">Sabor</label><select id="flav" class="select">' + flavOpts + "</select></div></div>" +
+              '<div class="form-row"><div class="field"><label for="preco">Preço (R$) <span class="req">*</span></label><input id="preco" class="input" type="number" step="0.01" min="0" data-validate="required" value="' + (p ? p.price : "") + '"></div>' +
+              '<div class="field"><label for="estoque">Estoque <span class="req">*</span></label><input id="estoque" class="input" type="number" min="0" data-validate="required" value="' + (p ? p.stock : "") + '"></div></div>' +
+              '<div class="form-row"><div class="field"><label for="prazo">Prazo (horas)</label><input id="prazo" class="input" type="number" min="0" value="' + (p ? p.leadHours : 4) + '"></div>' +
+              '<div class="field"><label for="img">Imagem</label><input id="img" type="file" accept="image/*" class="input" style="padding-top:9px"></div></div>' +
+              '<div class="flex items-center" style="gap:16px;margin:8px 0 16px"><img data-preview src="' + (p ? NG.url(p.image) : "") + '" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:8px;' + (p ? "" : "display:none") + '">' +
+              '<label class="toggle"><input type="checkbox" id="ativo"' + (!p || p.active ? " checked" : "") + '><span class="toggle__track"></span> Produto ativo</label></div>' +
+              '<div class="flex" style="gap:12px"><a class="btn btn--secondary btn--inline" href="produtos.html">Cancelar</a>' +
+              '<button class="btn btn--primary btn--inline" type="submit">' + (editing ? "Salvar alterações" : "Cadastrar produto") + "</button></div>" +
+            "</form>";
+
+          NG.adminShell("produtos", editing ? "Editar produto" : "Novo produto", content);
+
+          var form = NG.qs("[data-form]");
+          NG.validation.bindForm(form);
+          var imgData = p ? p.image : null;
+          NG.qs("#img").addEventListener("change", function (e) {
+            var file = e.target.files[0]; if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function () { imgData = reader.result; var pv = NG.qs("[data-preview]"); pv.src = reader.result; pv.style.display = "block"; };
+            reader.readAsDataURL(file);
+          });
+
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            if (!NG.validation.validateForm(form)) return;
+            var data = {
+              name: NG.qs("#nome").value,
+              description: NG.qs("#desc").value,
+              shortDesc: NG.qs("#desc").value.slice(0, 90),
+              category: NG.qs("#cat").value,
+              flavor: NG.qs("#flav").value,
+              price: parseFloat(NG.qs("#preco").value),
+              stock: parseInt(NG.qs("#estoque").value, 10),
+              leadHours: parseInt(NG.qs("#prazo").value, 10) || 4,
+              active: NG.qs("#ativo").checked,
+              image: imgData || "assets/products/bolos-pote-variados.jpg",
+              badges: p ? p.badges : [],
+              ingredients: p ? p.ingredients : [],
+            };
+            if (editing) { data.id = p.id; NG.productService.save(data); }
+            else NG.productService.create(data);
+            NG.toast({ type: "success", message: editing ? "Produto atualizado!" : "Produto cadastrado!" });
+            setTimeout(function () { location.href = "produtos.html"; }, 600);
+          });
+        }
+      },
+    };
+  </script>
+</body>
+</html>

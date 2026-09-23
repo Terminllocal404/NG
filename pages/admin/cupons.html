@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Cupons — Admin NG Doce Duo</title>
+  <link rel="icon" href="../../assets/logo/ng-doce-duo-logo.png" />
+  <link rel="stylesheet" href="../../css/main.css" />
+</head>
+<body data-no-layout>
+  <script src="../../js/include.js"></script>
+  <script src="../../js/admin.js"></script>
+  <script>
+    window.NG_PAGE = {
+      nav: "",
+      init: function () {
+        if (!NG.requireAdmin()) return;
+
+        NG.adminShell("cupons", "Cupons de desconto",
+          '<div class="flex-between" style="margin-bottom:24px;flex-wrap:wrap;gap:12px">' +
+          '<p class="text-soft" style="margin:0">Crie e gerencie cupons. Eles ficam disponíveis para os clientes no carrinho.</p>' +
+          '<button class="btn btn--primary btn--inline" data-new></button></div><div data-wrap></div>');
+
+        NG.qs("[data-new]").innerHTML = NG.icon("plus", { size: 18 }) + " Novo cupom";
+        NG.qs("[data-new]").addEventListener("click", function () { openForm(); });
+        render();
+
+        function scopeLabel(c) {
+          if (c.scope === "category") return "Categoria: " + NG.categoryName(c.category);
+          if (c.scope === "products") return (c.productIds || []).length + " produto(s)";
+          return "Todos os produtos";
+        }
+        function valueLabel(c) {
+          return c.type === "percent" ? c.value + "%" : NG.money(c.value);
+        }
+
+        function render() {
+          var list = NG.couponService.all();
+          var wrap = NG.qs("[data-wrap]");
+          if (!list.length) {
+            wrap.innerHTML = '<div class="card">' + NG.emptyState({ icon: "gift", title: "Nenhum cupom", message: "Crie o primeiro cupom de desconto da loja.", actionHtml: '<button class="btn btn--primary btn--inline" data-new-inline>Novo cupom</button>' }) + "</div>";
+            NG.qs("[data-new-inline]").addEventListener("click", function () { openForm(); });
+            return;
+          }
+          wrap.innerHTML = '<div class="data-table"><table><thead><tr><th>Código</th><th>Descrição</th><th>Desconto</th><th>Aplicação</th><th>Mínimo</th><th>Status</th><th></th></tr></thead><tbody>' +
+            list.map(function (c) {
+              return "<tr><td><strong>" + NG.escape(c.code) + "</strong></td><td>" + NG.escape(c.description || "") + "</td><td>" + valueLabel(c) + "</td><td>" + NG.escape(scopeLabel(c)) + "</td><td>" + (c.minSubtotal ? NG.money(c.minSubtotal) : "—") + "</td>" +
+                "<td>" + (c.active ? '<span class="badge badge--success">Ativo</span>' : '<span class="badge badge--neutral">Inativo</span>') + "</td>" +
+                '<td><div class="flex" style="gap:4px">' +
+                  '<button class="btn btn--ghost btn--sm btn--inline" data-edit="' + c.id + '" aria-label="Editar">' + NG.icon("edit", { size: 16 }) + "</button>" +
+                  '<button class="btn btn--ghost btn--sm btn--inline" data-toggle="' + c.id + '" data-active="' + c.active + '">' + (c.active ? "Desativar" : "Ativar") + "</button>" +
+                  '<button class="btn btn--ghost btn--sm btn--inline" data-del="' + c.id + '" style="color:var(--color-danger)" aria-label="Excluir">' + NG.icon("trash", { size: 16 }) + "</button>" +
+                "</div></td></tr>";
+            }).join("") + "</tbody></table></div>";
+
+          NG.qsa("[data-edit]").forEach(function (b) { b.addEventListener("click", function () { openForm(b.dataset.edit); }); });
+          NG.qsa("[data-toggle]").forEach(function (b) { b.addEventListener("click", function () { NG.couponService.toggle(b.dataset.toggle, b.dataset.active !== "true"); NG.toast({ type: "success", message: "Cupom atualizado." }); render(); }); });
+          NG.qsa("[data-del]").forEach(function (b) { b.addEventListener("click", function () {
+            NG.confirm({ title: "Excluir cupom", message: "Deseja excluir este cupom?", confirmLabel: "Excluir", danger: true }).then(function (ok) {
+              if (ok) { NG.couponService.remove(b.dataset.del); NG.toast({ message: "Cupom excluído." }); render(); }
+            });
+          }); });
+        }
+
+        function openForm(id) {
+          var c = id ? NG.couponService.get(id) : null;
+          var catOpts = NG.categories.map(function (x) { return '<option value="' + x.slug + '"' + (c && c.category === x.slug ? " selected" : "") + ">" + x.name + "</option>"; }).join("");
+          var prodChecks = NG.products.map(function (p) {
+            var on = c && (c.productIds || []).indexOf(p.id) !== -1;
+            return '<label class="check"><input type="checkbox" value="' + p.id + '"' + (on ? " checked" : "") + " data-prod> " + NG.escape(p.name) + "</label>";
+          }).join("");
+
+          NG.modal({
+            title: c ? "Editar cupom" : "Novo cupom",
+            body:
+              '<form data-form>' +
+              '<div class="form-row"><div class="field"><label for="c-code">Código <span class="req">*</span></label><input id="c-code" class="input" data-validate="required" style="text-transform:uppercase" value="' + (c ? NG.escape(c.code) : "") + '"></div>' +
+              '<div class="field"><label for="c-active">Status</label><select id="c-active" class="select"><option value="1"' + (!c || c.active ? " selected" : "") + '>Ativo</option><option value="0"' + (c && !c.active ? " selected" : "") + ">Inativo</option></select></div></div>" +
+              '<div class="field"><label for="c-desc">Descrição</label><input id="c-desc" class="input" value="' + (c ? NG.escape(c.description || "") : "") + '"></div>' +
+              '<div class="form-row"><div class="field"><label for="c-type">Tipo</label><select id="c-type" class="select"><option value="percent"' + (!c || c.type === "percent" ? " selected" : "") + '>Percentual (%)</option><option value="fixed"' + (c && c.type === "fixed" ? " selected" : "") + ">Valor fixo (R$)</option></select></div>" +
+              '<div class="field"><label for="c-value">Valor <span class="req">*</span></label><input id="c-value" class="input" type="number" step="0.01" min="0" data-validate="required" value="' + (c ? c.value : "") + '"></div></div>' +
+              '<div class="field"><label for="c-min">Valor mínimo do pedido (R$)</label><input id="c-min" class="input" type="number" step="0.01" min="0" value="' + (c ? (c.minSubtotal || 0) : 0) + '"></div>' +
+              '<div class="field"><label for="c-scope">Aplicação</label><select id="c-scope" class="select" data-scope><option value="all"' + (!c || c.scope === "all" ? " selected" : "") + '>Todos os produtos</option><option value="category"' + (c && c.scope === "category" ? " selected" : "") + '>Categoria</option><option value="products"' + (c && c.scope === "products" ? " selected" : "") + ">Produtos específicos</option></select></div>" +
+              '<div class="field" data-cat-field hidden><label for="c-cat">Categoria</label><select id="c-cat" class="select">' + catOpts + "</select></div>" +
+              '<div class="field" data-prod-field hidden><label>Produtos</label><div class="stack" style="gap:6px;max-height:180px;overflow:auto;border:1px solid var(--color-border);border-radius:8px;padding:12px">' + prodChecks + "</div></div>" +
+              "</form>",
+            footer: '<button class="btn btn--secondary btn--inline" data-close type="button">Cancelar</button><button class="btn btn--primary btn--inline" data-save type="button">Salvar cupom</button>',
+            onMount: function (el, close) {
+              var form = el.querySelector("[data-form]");
+              NG.validation.bindForm(form);
+              var scope = el.querySelector("[data-scope]");
+              function syncScope() {
+                el.querySelector("[data-cat-field]").hidden = scope.value !== "category";
+                el.querySelector("[data-prod-field]").hidden = scope.value !== "products";
+              }
+              scope.addEventListener("change", syncScope);
+              syncScope();
+              el.querySelector("[data-save]").addEventListener("click", function () {
+                if (!NG.validation.validateForm(form)) return;
+                var sc = scope.value;
+                var data = {
+                  code: NG.qs("#c-code").value,
+                  description: NG.qs("#c-desc").value,
+                  type: NG.qs("#c-type").value,
+                  value: parseFloat(NG.qs("#c-value").value),
+                  minSubtotal: parseFloat(NG.qs("#c-min").value) || 0,
+                  scope: sc,
+                  category: sc === "category" ? NG.qs("#c-cat").value : null,
+                  productIds: sc === "products" ? NG.qsa("[data-prod]", el).filter(function (i) { return i.checked; }).map(function (i) { return i.value; }) : [],
+                  active: NG.qs("#c-active").value === "1",
+                };
+                if (sc === "products" && !data.productIds.length) { NG.toast({ type: "danger", message: "Selecione ao menos um produto." }); return; }
+                // código único
+                var existing = NG.couponService.getByCode(data.code);
+                if (existing && (!c || existing.id !== c.id)) { NG.toast({ type: "danger", message: "Já existe um cupom com esse código." }); return; }
+                if (c) NG.couponService.update(c.id, data); else NG.couponService.create(data);
+                close(); render();
+                NG.toast({ type: "success", message: c ? "Cupom atualizado." : "Cupom criado." });
+              });
+            },
+          });
+        }
+      },
+    };
+  </script>
+</body>
+</html>

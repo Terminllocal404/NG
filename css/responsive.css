@@ -1,0 +1,67 @@
+/* ============================================
+   NG Doce Duo — Responsividade
+   Breakpoints: 640px / 1024px / 1280px
+   ============================================ */
+
+/* Catálogo com filtros vira coluna no mobile/tablet */
+@media (max-width: 1024px) {
+  .catalog-filters {
+    position: static !important;
+  }
+}
+
+/* Header: navegação horizontal some, entra hambúrguer */
+@media (max-width: 900px) {
+  .main-nav { display: none; }
+  .hamburger {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    border-radius: var(--radius-field);
+    color: var(--color-cream);
+  }
+  .hamburger:hover { background: var(--color-chocolate-dark); }
+  .hamburger .icon { width: 24px; height: 24px; }
+  .brand__tag { display: none; }
+  /* Sem navegação central no mobile: marca à esquerda, ícones à direita */
+  .site-header__bar { display: flex; justify-content: space-between; gap: var(--sp-2); }
+  .header-actions { gap: var(--sp-1); }
+}
+
+/* Telas bem estreitas: prioriza os ícones de ação, encolhe a marca */
+@media (max-width: 640px) {
+  .brand__text { display: none; }
+}
+@media (max-width: 420px) {
+  .brand img { width: 40px; height: 40px; }
+  .icon-btn { width: 42px; height: 42px; }
+}
+
+/* Produto: galeria + info empilham */
+@media (max-width: 900px) {
+  .product-layout { grid-template-columns: 1fr !important; }
+}
+
+/* Checkout empilha resumo abaixo */
+@media (max-width: 1024px) {
+  .split--checkout .order-summary { position: static; }
+}
+
+/* Botões primários em largura total abaixo de 640 já tratado em components */
+
+/* Ajustes finos mobile */
+@media (max-width: 640px) {
+  .section { padding-block: var(--sp-12); }
+  .section-head { flex-direction: column; align-items: flex-start; }
+  .hero { padding-block: var(--sp-12); }
+  .form-card { margin-block: var(--sp-6); padding: var(--sp-6); }
+  .modal__head, .modal__body, .modal__foot { padding: var(--sp-4); }
+}
+
+/* Container mais largo em telas grandes mantém 1200 */
+@media (min-width: 1280px) {
+  .container { padding-inline: var(--gutter); }
+}
